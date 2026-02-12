@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEVICHERIA 21</title>
+    <link rel="stylesheet" href="style.css?v=force">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.png">
+    <meta name="theme-color" content="#0D47A1">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.log('SW Error:', err));
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="landing-container">
+        <!-- Logo bigger, moved down -->
+        <img src="logo.png" class="floating-logo"
+            style="width: 200px; height: auto; border-radius: 10px; margin-bottom: 30px;">
+
+        <button class="role-btn btn-mesero" onclick="openSecurity('mesero')">
+            📱 SOY MESERO
+            <span style="font-size: 14px; font-weight: normal;">Tomar Pedidos</span>
+        </button>
+
+        <button class="role-btn btn-caja" onclick="openSecurity('caja')">
+            💻 SOY CAJA
+            <span style="font-size: 14px; font-weight: normal;">Cobrar e Imprimir</span>
+        </button>
+    </div>
+
+    <button onclick="forceUpdateSystem()"
+        style="margin-top: 20px; background: transparent; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; color: #666;">
+        🔄 ACTUALIZAR SISTEMA
+    </button>
+    </div>
+
+    <!-- SECURITY MODAL -->
+    <div id="securityModal" class="pin-modal">
+        <h2 style="color:white; margin-bottom: 20px;">Ingrese PIN</h2>
+        <div class="pin-display">
+            <div class="pin-dot" id="d1"></div>
+            <div class="pin-dot" id="d2"></div>
+            <div class="pin-dot" id="d3"></div>
+            <div class="pin-dot" id="d4"></div>
+        </div>
+        <div class="pin-pad">
+            <button class="pin-btn" onclick="addPin('1')">1</button>
+            <button class="pin-btn" onclick="addPin('2')">2</button>
+            <button class="pin-btn" onclick="addPin('3')">3</button>
+            <button class="pin-btn" onclick="addPin('4')">4</button>
+            <button class="pin-btn" onclick="addPin('5')">5</button>
+            <button class="pin-btn" onclick="addPin('6')">6</button>
+            <button class="pin-btn" onclick="addPin('7')">7</button>
+            <button class="pin-btn" onclick="addPin('8')">8</button>
+            <button class="pin-btn" onclick="addPin('9')">9</button>
+            <button class="pin-btn clear" onclick="closeSecurity()">X</button>
+            <button class="pin-btn" onclick="addPin('0')">0</button>
+            <button class="pin-btn clear" onclick="clearPin()">⌫</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=force"></script>
+    <script>
+        let currentPin = "";
+        let targetRole = "";
+
+        function openSecurity(role) {
+            targetRole = role;
+            currentPin = "";
+            updateDots();
+            document.getElementById('securityModal').style.display = 'flex';
+        }
+
+        function closeSecurity() {
+            document.getElementById('securityModal').style.display = 'none';
+        }
+
+        function addPin(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updateDots();
+                if (currentPin.length === 4) {
+                    setTimeout(validatePin, 300);
+                }
+            }
+        }
+
+        function clearPin() {
+            currentPin = "";
+            updateDots();
+        }
+
+        function updateDots() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`d${i}`);
+                if (i <= currentPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+
+        function validatePin() {
+            // CREDENCIALES
+            // Caja: 2121
+            // Mesero 1: 9999
+            // Mesero 2: 7777
+
+            let valid = false;
+
+            if (targetRole === 'caja') {
+                if (currentPin === '2121') valid = true;
+            } else if (targetRole === 'mesero') {
+                if (currentPin === '9999') {
+                    localStorage.setItem('currentUser', 'Mesero 1');
+                    valid = true;
+                } else if (currentPin === '7777') {
+                    localStorage.setItem('currentUser', 'Mesero 2');
+                    valid = true;
+                }
+            }
+
+            if (valid) {
+                window.location.href = targetRole + '.html';
+            } else {
+                alert("PIN Incorrecto");
+                clearPin();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

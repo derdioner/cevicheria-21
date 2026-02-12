@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEVICHERIA 21 - Mesero</title>
+    <link rel="stylesheet" href="style.css?v=force">
+    <link rel="icon" href="logo.png">
+</head>
+
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="logo.png" style="height: 40px; border-radius: 5px;">
+            <h1>📱 Mesero</h1>
+        </div>
+        <a href="index.html" class="btn-secondary"
+            style="padding: 10px; text-decoration: none; text-align: center;">Salir</a>
+    </header>
+
+    <!-- VISTA: MESAS -->
+    <div id="tablesView">
+        <div class="grid-mesas" id="gridMesas">
+            <!-- JS generates tables here -->
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button onclick="forceUpdateSystem()"
+                style="background: transparent; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; color: #666;">
+                🔄 ACTUALIZAR SISTEMA
+            </button>
+        </div>
+    </div>
+
+    <!-- VISTA: PEDIDO (Replaces Modal) -->
+    <div id="orderView" style="display: none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 id="orderTitle" style="margin:0; color: var(--primary);">Mesa X</h2>
+            <button class="btn-secondary" onclick="closeOrderView()">🔙 Volver</button>
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            <!-- JS generates products here -->
+        </div>
+
+        <div class="order-summary">
+            <h3>Resumen:</h3>
+            <div id="orderList">
+                <p style="text-align:center; color:#999;">Nada agregado aún</p>
+            </div>
+            <h3 style="text-align: right; margin-top: 10px;">Total: <span id="modalTotal">S/ 0.00</span></h3>
+        </div>
+
+        <div class="order-actions">
+            <button class="btn-secondary" onclick="closeOrderView()">Cancelar</button>
+            <button class="btn-primary" onclick="confirmOrder()">✅ ENVIAR PEDIDO</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import './script.js?v=force';
+    </script>
+    <script>
+        const grid = document.getElementById('gridMesas');
+        const tablesView = document.getElementById('tablesView');
+        const orderView = document.getElementById('orderView');
+
+        let currentMesaId = null;
+        let currentOrderItems = [];
+
+        function renderTables() {
+            const db = getDB();
+            grid.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                const key = `mesa_${i}`;
+                const mesa = db[key];
+                const card = document.createElement('div');
+                card.className = `card-mesa ${mesa.status}`;
+                card.innerHTML = `
+                    <div style="font-size: 30px;">🍽️</div>
+                    MESA ${i}
+                    <div style="font-size: 14px; margin-top: 5px;">${mesa.status === 'free' ? 'Libre' : formatMoney(mesa.total)}</div>
+                `;
+                card.onclick = () => openTable(i);
+                grid.appendChild(card);
+            }
+        }
+
+        function openTable(id) {
+            currentMesaId = id;
+            const db = getDB();
+            const mesa = db[`mesa_${id}`];
+
+            // Load existing items if any
+            currentOrderItems = [...mesa.items];
+
+            document.getElementById('orderTitle').innerText = `Pedido Mesa ${id}`;
+            renderProductGrid();
+            renderOrderSummary();
+
+            // SWITCH VIEW
+            tablesView.style.display = 'none';
+            orderView.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function renderProductGrid() {
+            const container = document.getElementById('productGrid');
+            const categories = [...new Set(MENU.map(p => p.category))];
+
+            container.innerHTML = categories.map((cat, index) => {
+                const items = MENU.filter(p => p.category === cat);
+                return `
+                    <div class="category-block">
+                        <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
+                            ${cat}
+                        </div>
+                        <div id="cat_${index}" class="items-container">
+                            ${items.map(p => `
+                                <div class="product-btn" id="btn_${p.id}" onclick="addToOrder(${p.id}, this)">
+                                    <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px;">
+                                        <h4 style="margin:0;">${p.name}</h4>
+                                        <span class="qty-badge" style="display:none">0</span>
+                                    </div>
+                                    <span>${formatMoney(p.price)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleCategory(id, headerElement) {
+            // Close others
+            document.querySelectorAll('.items-container').forEach(el => {
+                if (el.id !== id) el.classList.remove('active');
+            });
+            document.querySelectorAll('.category-header').forEach(el => {
+                if (el !== headerElement) el.classList.remove('active');
+            });
+
+            // Toggle current
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.toggle('active');
+                headerElement.classList.toggle('active');
+            }
+        }
+
+        function addToOrder(productId, btnElement) {
+            const product = MENU.find(p => p.id === productId);
+
+            // UI Feedback: Flash Green
+            if (btnElement) {
+                btnElement.classList.add('pressed');
+                setTimeout(() => btnElement.classList.remove('pressed'), 300);
+            }
+
+            // Add Logic
+            const itemToAdd = {
+                ...product,
+                printed: false,
+                addedAt: Date.now()
+            };
+            currentOrderItems.push(itemToAdd);
+
+            // UI Feedback: Update Counter
+            if (btnElement) {
+                const badge = btnElement.querySelector('.qty-badge');
+                if (badge) {
+                    const count = currentOrderItems.filter(i => i.id === productId).length;
+                    badge.innerText = count;
+                    badge.classList.add('show');
+                    // Remove inline display if any
+                    badge.style.display = '';
+                }
+            }
+
+            renderOrderSummary();
+        }
+
+        function removeFromOrder(index) {
+            const itemToRemove = currentOrderItems[index];
+            if (!itemToRemove) return;
+
+            // Remove from array
+            currentOrderItems.splice(index, 1);
+
+            // Update Summary
+            renderOrderSummary();
+
+            // Update Badge Logic
+            const productId = itemToRemove.id;
+            const btn = document.getElementById(`btn_${productId}`);
+            if (btn) {
+                const badge = btn.querySelector('.qty-badge');
+                if (badge) {
+                    const count = currentOrderItems.filter(i => i.id === productId).length;
+                    if (count > 0) {
+                        badge.innerText = count;
+                        badge.classList.add('show');
+                        badge.style.display = '';
+                    } else {
+                        badge.classList.remove('show');
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function renderOrderSummary() {
+            const list = document.getElementById('orderList');
+            const totalEl = document.getElementById('modalTotal');
+
+            if (currentOrderItems.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999;">Nada agregado aún</p>';
+                totalEl.innerText = formatMoney(0);
+                return;
+            }
+
+            let total = 0;
+            list.innerHTML = currentOrderItems.map((item, index) => {
+                total += item.price;
+                return `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:5px;">
+                    <div style="display:flex; align-items:center;">
+                        <button onclick="removeFromOrder(${index})" style="background:transparent; border:none; color:red; font-weight:bold; cursor:pointer; margin-right:8px; font-size:16px;">❌</button>
+                        <span>${item.name}</span>
+                    </div>
+                    <span>${formatMoney(item.price)}</span>
+                </div>`;
+            }).join('');
+
+            totalEl.innerText = formatMoney(total);
+        }
+
+        function closeOrderView() {
+            orderView.style.display = 'none';
+            tablesView.style.display = 'block'; // Or 'grid' if using grid directly on container, but block is fine for wrapper
+            currentOrderItems = [];
+            renderTables();
+        }
+
+        function confirmOrder() {
+            const db = getDB();
+            const key = `mesa_${currentMesaId}`;
+
+            db[key].items = currentOrderItems;
+            db[key].status = currentOrderItems.length > 0 ? 'occupied' : 'free';
+            db[key].total = currentOrderItems.reduce((sum, item) => sum + item.price, 0);
+
+            saveDB(db);
+            closeOrderView();
+        }
+
+        // Init (Wait for module)
+        window.onload = function () {
+            setTimeout(() => {
+                if (typeof renderTables === 'function') renderTables();
+            }, 1000);
+        };
+    </script>
+</body>
+
+</html>
