@@ -4,12 +4,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAcI0CyWAcfBYdkBquCgj9RWSdpTrqjj6g",
-    authDomain: "iee-genaro-herrera.firebaseapp.com",
-    projectId: "iee-genaro-herrera",
-    storageBucket: "iee-genaro-herrera.firebasestorage.app",
-    messagingSenderId: "380822703142",
-    appId: "1:380822703142:web:1834c7a730435ee01f2ae7"
+    apiKey: "AIzaSyCZKjsUWAWgjbKgwkJbAJWlHbaM5sseqYs",
+    authDomain: "cevicheria-21-app.firebaseapp.com",
+    projectId: "cevicheria-21-app",
+    storageBucket: "cevicheria-21-app.firebasestorage.app",
+    messagingSenderId: "375366482093",
+    appId: "1:375366482093:web:39e53188e71c2841596e24"
 };
 
 // Initialize Firebase

@@ -1,0 +1,1 @@
+const { exec } = require('child_process'); exec('firebase apps:sdkconfig --json', (err, stdout) => { const cfg = JSON.parse(stdout).result.sdkConfig; console.log('KEY=' + cfg.apiKey); console.log('ID=' + cfg.appId); });
