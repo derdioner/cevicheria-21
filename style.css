@@ -28,6 +28,10 @@ body {
     background: linear-gradient(-45deg, #ECEFF1, #E3F2FD, #FFFFFF, #ECEFF1);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Prevent body scroll, handle inside components */
 }
 
 @keyframes gradientBG {
@@ -71,6 +75,8 @@ body {
     justify-content: center;
     height: 100%;
     gap: 30px;
+    flex: 1;
+    /* Take available space in flex body */
 }
 
 .role-btn {
@@ -192,10 +198,14 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1.5fr 1fr;
     gap: 20px;
-    height: calc(100vh - 60px);
-    /* Tweak height to fit exactly */
+    flex: 1;
+    /* Fill remaining space */
+    height: auto;
+    /* Remove fixed calc */
     overflow: hidden;
     padding-bottom: 0;
+    min-height: 0;
+    /* Critical for nested flex scrolling */
 }
 
 .tables-column {
@@ -204,6 +214,8 @@ h1 {
     border-radius: 12px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    height: 100%;
 }
 
 .grid-mesas-split {
@@ -212,7 +224,12 @@ h1 {
     gap: 15px;
     overflow-y: auto;
     padding-right: 5px;
-    padding-bottom: 20px;
+    padding-bottom: 50px;
+    /* Reducing slightly as flex:1 handles space better */
+    flex: 1;
+    /* Take REMAINING space, not 100% of parent */
+    min-height: 0;
+    /* Allow shrinking */
 }
 
 .action-panel {
@@ -538,18 +555,6 @@ h1 {
 
 .order-actions {
     gap: 15px;
-}
-
-/* Fix for screen display to prevent layout issues */
-#ticket-print-area {
-    visibility: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-    z-index: -1;
 }
 
 @media print {
