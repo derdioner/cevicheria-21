@@ -5,8 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEVICHERIA 21 - Mesero</title>
-    <link rel="stylesheet" href="style.css?v=force">
+    <link rel="stylesheet" href="style.css?v=1707845500">
     <link rel="icon" href="logo.png">
+    <script>
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.background = 'red';
+            div.style.color = 'white';
+            div.style.zIndex = '9999';
+            div.style.padding = '10px';
+            div.style.textAlign = 'center';
+            div.innerText = "ERROR CRÍTICO: " + msg;
+            document.body.appendChild(div);
+            return false;
+        };
+    </script>
 </head>
 
 <body>
@@ -14,28 +31,50 @@
     <header>
         <div style="display: flex; align-items: center; gap: 10px;">
             <img src="logo.png" style="height: 40px; border-radius: 5px;">
-            <h1>📱 Mesero</h1>
+            <div>
+                <h1>📱 Mesero</h1>
+                <small id="db-status" style="font-size: 10px; color: orange;">⏳ Conectando...</small>
+            </div>
         </div>
         <a href="index.html" class="btn-secondary"
             style="padding: 10px; text-decoration: none; text-align: center;">Salir</a>
     </header>
 
     <!-- VISTA: MESAS -->
-    <div id="tablesView">
+    <div id="tablesView" style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
         <div class="grid-mesas" id="gridMesas">
             <!-- JS generates tables here -->
-        </div>
-
-        <div style="text-align: center; margin-bottom: 30px;">
-            <button onclick="forceUpdateSystem()"
-                style="background: transparent; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; color: #666;">
-                🔄 ACTUALIZAR SISTEMA
-            </button>
+            <div style="text-align: center; padding: 50px; color: #999;">Cargando mesas... 🦐</div>
         </div>
     </div>
 
+    <!-- UPDATE BUTTON (Universal) -->
+    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
+        <div
+            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
+            Actualizar</div>
+    </div>
+
+    <style>
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
+
     <!-- VISTA: PEDIDO (Replaces Modal) -->
-    <div id="orderView" style="display: none;">
+    <div id="orderView" style="display: none; flex: 1; overflow-y: auto; padding-bottom: 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h2 id="orderTitle" style="margin:0; color: var(--primary);">Mesa X</h2>
             <button class="btn-secondary" onclick="closeOrderView()">🔙 Volver</button>
@@ -72,10 +111,16 @@
 
         function renderTables() {
             const db = getDB();
+            if (!db || Object.keys(db).length === 0) {
+                // Not ready, wait for event
+                return;
+            }
             grid.innerHTML = '';
             for (let i = 1; i <= 20; i++) {
                 const key = `mesa_${i}`;
                 const mesa = db[key];
+                if (!mesa) continue;
+
                 const card = document.createElement('div');
                 card.className = `card-mesa ${mesa.status}`;
                 card.innerHTML = `
@@ -89,48 +134,79 @@
         }
 
         function openTable(id) {
-            currentMesaId = id;
-            const db = getDB();
-            const mesa = db[`mesa_${id}`];
+            try {
+                currentMesaId = id;
+                const db = getDB();
+                if (!db) throw new Error("DB no lista");
 
-            // Load existing items if any
-            currentOrderItems = [...mesa.items];
+                const mesa = db[`mesa_${id}`];
+                if (!mesa) throw new Error("Mesa no encontrada en DB");
 
-            document.getElementById('orderTitle').innerText = `Pedido Mesa ${id}`;
-            renderProductGrid();
-            renderOrderSummary();
+                // Load existing items if any
+                currentOrderItems = mesa.items ? [...mesa.items] : [];
 
-            // SWITCH VIEW
-            tablesView.style.display = 'none';
-            orderView.style.display = 'block';
-            window.scrollTo(0, 0);
+                document.getElementById('orderTitle').innerText = `Pedido Mesa ${id}`;
+                renderProductGrid();
+                renderOrderSummary();
+
+                // SWITCH VIEW
+                const tView = document.getElementById('tablesView');
+                const oView = document.getElementById('orderView');
+
+                if (tView && oView) {
+                    tView.style.display = 'none';
+                    oView.style.display = 'block';
+                    window.scrollTo(0, 0);
+                } else {
+                    throw new Error("Elementos de vista no encontrados");
+                }
+
+            } catch (e) {
+                alert("Error: " + e.message);
+                console.error(e);
+            }
         }
 
         function renderProductGrid() {
-            const container = document.getElementById('productGrid');
-            const categories = [...new Set(MENU.map(p => p.category))];
+            try {
+                const container = document.getElementById('productGrid');
 
-            container.innerHTML = categories.map((cat, index) => {
-                const items = MENU.filter(p => p.category === cat);
-                return `
-                    <div class="category-block">
-                        <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
-                            ${cat}
-                        </div>
-                        <div id="cat_${index}" class="items-container">
-                            ${items.map(p => `
-                                <div class="product-btn" id="btn_${p.id}" onclick="addToOrder(${p.id}, this)">
-                                    <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px;">
-                                        <h4 style="margin:0;">${p.name}</h4>
-                                        <span class="qty-badge" style="display:none">0</span>
+                // Retry if MENU not ready
+                if (!window.MENU) {
+                    container.innerHTML = "<p>Cargando menú... 🍤</p>";
+                    console.log("MENU not ready, retrying in 500ms...");
+                    setTimeout(renderProductGrid, 500);
+                    return;
+                }
+
+                const categories = [...new Set(window.MENU.map(p => p.category))];
+
+                container.innerHTML = categories.map((cat, index) => {
+                    const items = window.MENU.filter(p => p.category === cat);
+                    return `
+                        <div class="category-block">
+                            <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
+                                ${cat}
+                            </div>
+                            <div id="cat_${index}" class="items-container">
+                                ${items.map(p => `
+                                    <div class="product-btn" id="btn_${p.id}" onclick="addToOrder(${p.id}, this)">
+                                        <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px;">
+                                            <h4 style="margin:0;">${p.name}</h4>
+                                            <span class="qty-badge" style="display:none">0</span>
+                                        </div>
+                                        <span>${formatMoney(p.price)}</span>
                                     </div>
-                                    <span>${formatMoney(p.price)}</span>
-                                </div>
-                            `).join('')}
+                                `).join('')}
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error("Error renderProductGrid", e);
+                // Don't show alert loop
+                document.getElementById('productGrid').innerHTML = "Error al mostrar productos: " + e.message;
+            }
         }
 
         function toggleCategory(id, headerElement) {

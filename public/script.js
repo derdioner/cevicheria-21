@@ -19,17 +19,39 @@ for (let i = 1; i <= 20; i++) {
 // Initialize Data & Listen for Updates
 function initDB() {
     const docRef = doc(db, DB_COLLECTION, DB_DOC_ID);
+    let isConnected = false;
 
     // Initial Load & Realtime Listener
     onSnapshot(docRef, (docSnap) => {
+        isConnected = true;
         if (docSnap.exists()) {
             localData = docSnap.data();
-            console.log("Firestore Update Received:", localData);
-            // Trigger update UI
-            window.dispatchEvent(new Event('storage'));
+
+            // MIGRATION: Ensure dailySales exists
+            if (!localData.dailySales) {
+                console.log("Migrating DB: Adding dailySales array");
+                localData.dailySales = [];
+                // We don't save immediately to avoid loop with snapshot, 
+                // but we modify local instance so next saveDB includes it.
+                // Or better, save it once.
+                setDoc(docRef, localData, { merge: true });
+            }
+
+            console.log("Firestore Update Received");
+            // DIRECT UPDATE
+            if (typeof window.renderTables === 'function') {
+                window.renderTables();
+            }
+
+            // Update Connection Status UI
+            const statusEl = document.getElementById('db-status');
+            if (statusEl) {
+                statusEl.innerText = "🟢 Conectado";
+                statusEl.style.color = "green";
+            }
         } else {
             // First time setup
-            console.log("Creating new DB structure in Firestore...");
+            console.log("Creating new DB structure...");
             const initialData = {};
             for (let i = 1; i <= 20; i++) {
                 initialData[`mesa_${i}`] = {
@@ -39,9 +61,35 @@ function initDB() {
                     total: 0
                 };
             }
+            initialData.dailySales = []; // Init history
             setDoc(docRef, initialData);
         }
+    }, (error) => {
+        console.error("Firestore Error:", error);
+        const statusEl = document.getElementById('db-status');
+        if (statusEl) {
+            statusEl.innerText = "🔴 Error Conexión";
+            statusEl.style.color = "red";
+        }
+        // Force offline mode
+        isConnected = true; // Handled error
+        if (typeof window.renderTables === 'function') window.renderTables();
     });
+
+    // FALLBACK TIMEOUT: If no response in 3s, force load offline
+    setTimeout(() => {
+        if (!isConnected) {
+            console.warn("Connection timeout - forcing offline render");
+            const statusEl = document.getElementById('db-status');
+            if (statusEl) {
+                statusEl.innerText = "⚠️ Modo Offline";
+                statusEl.style.color = "orange";
+            }
+            if (typeof window.renderTables === 'function') {
+                window.renderTables();
+            }
+        }
+    }, 3000);
 }
 
 function getDB() {
@@ -59,17 +107,17 @@ function saveDB(data) {
         .catch((e) => console.error("Error syncing:", e));
 }
 
-// HISTORY FUNCTIONS (Local for now, can migrate if needed)
-const HIST_KEY = 'cevicheria_history';
-
+// HISTORY FUNCTIONS (Migrated to Firestore)
 function getHistory() {
-    return JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    return localData.dailySales || [];
 }
 
 function addToHistory(mesaData) {
     if (!mesaData.items || mesaData.items.length === 0) return;
 
-    const history = getHistory();
+    // Ensure array exists
+    if (!localData.dailySales) localData.dailySales = [];
+
     const entry = {
         date: new Date().toISOString(), // ISO format for easy sorting
         timestamp: Date.now(),
@@ -78,12 +126,17 @@ function addToHistory(mesaData) {
         total: mesaData.total
     };
 
-    history.push(entry);
-    localStorage.setItem(HIST_KEY, JSON.stringify(history));
+    localData.dailySales.push(entry);
+    // saveDB will be called by the caller (closeTable) to persist this change
+    // But closeTable calls saveDB... wait. 
+    // closeTable modifies localData[mesa] and then calls saveDB. 
+    // If we modify localData here, it will be saved when closeTable calls saveDB(db).
+    // so we don't need to call saveDB here explicitly if it's part of the same transaction flow.
 }
 
 function getDailyReport() {
-    const history = getHistory();
+    // Use Firestore data instead of localStorage
+    const history = localData.dailySales || [];
     const today = new Date().toLocaleDateString();
 
     // Filter for today
@@ -225,6 +278,9 @@ const MENU = [
     { id: 1512, name: 'Mikes', price: 6.00, category: 'BEBIDAS' },
     { id: 1513, name: 'Pilsen Personal', price: 7.00, category: 'BEBIDAS' }
 ];
+
+// EXPOSE MENU IMMEDIATELY
+window.MENU = MENU;
 
 // SHARED FUNCTIONS
 // Helper to print using hidden iframe
@@ -425,4 +481,94 @@ window.MENU = MENU;
 window.initDB = initDB;
 
 // Init on load
-initDB();
+
+// Init on load
+// REPORTING FUNCTIONS
+function getReportByDate(dateString) {
+    const history = localData.dailySales || [];
+    const targetDate = dateString; // YYYY-MM-DD
+
+    const filtered = history.filter(h => {
+        // Convert timestamp to YYYY-MM-DD in local time
+        const d = new Date(h.timestamp);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const localISO = `${year}-${month}-${day}`;
+        return localISO === targetDate;
+    });
+
+    const totalRevenue = filtered.reduce((sum, s) => sum + s.total, 0);
+    const productCounts = {};
+
+    filtered.forEach(sale => {
+        sale.items.forEach(item => {
+            productCounts[item.name] = (productCounts[item.name] || 0) + 1;
+        });
+    });
+
+    return {
+        totalRevenue,
+        salesCount: filtered.length,
+        productCounts
+    };
+}
+
+function printReport(dateString, stats) {
+    // Format Date for display
+    const [y, m, d] = dateString.split('-');
+    const displayDate = `${d}/${m}/${y}`;
+
+    let itemsHtml = '';
+    for (const [name, count] of Object.entries(stats.productCounts)) {
+        itemsHtml += `
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
+                <span>${name}</span>
+                <span>x${count}</span>
+            </div>
+        `;
+    }
+
+    const reportHtml = `
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
+                h2, h3 { text-align: center; margin: 5px 0; }
+                .divider { border-top: 1px dashed #000; margin: 10px 0; }
+                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <h2>CEVICHERIA 21</h2>
+            <h3>PUNTO DE VENTA</h3>
+            <h3>REPORTE DE VENTAS</h3>
+            <p style="text-align:center;">FECHA: ${displayDate}</p>
+            <div class="divider"></div>
+            ${itemsHtml}
+            <div class="divider"></div>
+            <div class="total">TOTAL: ${formatMoney(stats.totalRevenue)}</div>
+            <p style="text-align:right;">Transacciones: ${stats.salesCount}</p>
+            <p style="text-align:center; margin-top:20px;">Reporte Generado: ${new Date().toLocaleTimeString()}</p>
+        </body>
+        </html>
+    `;
+
+    printContent(reportHtml);
+}
+
+// Ensure these are globally available
+window.getReportByDate = getReportByDate;
+window.printReport = printReport;
+
+// Init on load
+console.log("Script loaded, attempting initDB...");
+try {
+    if (typeof initDB === 'function') {
+        initDB();
+        console.log("initDB called.");
+    }
+} catch (e) {
+    console.error("FATAL: initDB failed", e);
+}
+

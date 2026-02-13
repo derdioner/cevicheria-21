@@ -5,15 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEVICHERIA 21</title>
-    <link rel="stylesheet" href="style.css?v=force">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="logo.png">
-    <meta name="theme-color" content="#0D47A1">
+    <link rel="stylesheet" href="style.css?v=1707845500">
+    <link rel="manifest" href="manifest.json?v=3">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="shortcut icon" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#DC0000">
+    <meta name="msapplication-TileColor" content="#DC0000">
+    <meta name="msapplication-TileImage" content="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker Registered'))
+                .then((registration) => {
+                    console.log('Service Worker Registered');
+                    registration.onupdatefound = () => {
+                        const installingWorker = registration.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('New content is available; please refresh.');
+                                    window.location.reload();
+                                } else {
+                                    console.log('Content is cached for offline use.');
+                                }
+                            }
+                        };
+                    };
+                })
                 .catch((err) => console.log('SW Error:', err));
+
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
         }
     </script>
 </head>
@@ -25,50 +53,72 @@
         <img src="logo.png" class="floating-logo"
             style="width: 200px; height: auto; border-radius: 10px; margin-bottom: 30px;">
 
-        <button class="role-btn btn-mesero" onclick="openSecurity('mesero')">
-            📱 SOY MESERO
-            <span style="font-size: 14px; font-weight: normal;">Tomar Pedidos</span>
-        </button>
+        <div class="menu-grid">
+            <button class="role-btn btn-mesero" onclick="openSecurity('mesero')">
+                <div class="icon">📱</div>
+                <span>MESERO</span>
+                <small>Pedidos</small>
+            </button>
 
-        <button class="role-btn btn-caja" onclick="openSecurity('caja')">
-            💻 SOY CAJA
-            <span style="font-size: 14px; font-weight: normal;">Cobrar e Imprimir</span>
-        </button>
+            <button class="role-btn btn-caja" onclick="openSecurity('caja')">
+                <div class="icon">💻</div>
+                <span>CAJA</span>
+                <small>Cobrar</small>
+            </button>
+
+            <button class="role-btn btn-reportes" onclick="openSecurity('reportes')">
+                <div class="icon">📊</div>
+                <span>REPORTES</span>
+                <small>Historial</small>
+            </button>
+        </div>
     </div>
 
-    <button onclick="forceUpdateSystem()"
-        style="margin-top: 20px; background: transparent; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; color: #666;">
-        🔄 ACTUALIZAR SISTEMA
+    <!-- INSTALL BUTTON (Hidden by default) -->
+    <button id="btnInstall" onclick="installPWA()" class="btn-install" style="display: none;">
+        📲 Instalar Aplicación
     </button>
     </div>
 
-    <!-- SECURITY MODAL -->
-    <div id="securityModal" class="pin-modal">
-        <h2 style="color:white; margin-bottom: 20px;">Ingrese PIN</h2>
-        <div class="pin-display">
-            <div class="pin-dot" id="d1"></div>
-            <div class="pin-dot" id="d2"></div>
-            <div class="pin-dot" id="d3"></div>
-            <div class="pin-dot" id="d4"></div>
-        </div>
-        <div class="pin-pad">
-            <button class="pin-btn" onclick="addPin('1')">1</button>
-            <button class="pin-btn" onclick="addPin('2')">2</button>
-            <button class="pin-btn" onclick="addPin('3')">3</button>
-            <button class="pin-btn" onclick="addPin('4')">4</button>
-            <button class="pin-btn" onclick="addPin('5')">5</button>
-            <button class="pin-btn" onclick="addPin('6')">6</button>
-            <button class="pin-btn" onclick="addPin('7')">7</button>
-            <button class="pin-btn" onclick="addPin('8')">8</button>
-            <button class="pin-btn" onclick="addPin('9')">9</button>
-            <button class="pin-btn clear" onclick="closeSecurity()">X</button>
-            <button class="pin-btn" onclick="addPin('0')">0</button>
-            <button class="pin-btn clear" onclick="clearPin()">⌫</button>
-        </div>
+    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
+        style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
+        <div
+            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
+            Actualizar</div>
     </div>
 
     <script src="script.js?v=force"></script>
     <script>
+        // PWA INSTALL LOGIC
+        let deferredPrompt;
+        const btnInstall = document.getElementById('btnInstall');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI to notify the user they can add to home screen
+            btnInstall.style.display = 'block';
+        });
+
+        function installPWA() {
+            if (!deferredPrompt) return;
+            // Show the prompt
+            deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                } else {
+                    console.log('User dismissed the A2HS prompt');
+                }
+                deferredPrompt = null;
+                btnInstall.style.display = 'none';
+            });
+        }
+
         let currentPin = "";
         let targetRole = "";
 
@@ -119,6 +169,8 @@
 
             if (targetRole === 'caja') {
                 if (currentPin === '2121') valid = true;
+            } else if (targetRole === 'reportes') {
+                if (currentPin === '2027') valid = true;
             } else if (targetRole === 'mesero') {
                 if (currentPin === '9999') {
                     localStorage.setItem('currentUser', 'Mesero 1');
@@ -137,6 +189,31 @@
             }
         }
     </script>
+
+    <!-- PIN Security Modal -->
+    <div id="securityModal" class="pin-modal">
+        <div style="color: white; font-size: 24px; margin-bottom: 20px; font-weight: bold;">INGRESE PIN</div>
+        <div class="pin-display">
+            <div id="d1" class="pin-dot"></div>
+            <div id="d2" class="pin-dot"></div>
+            <div id="d3" class="pin-dot"></div>
+            <div id="d4" class="pin-dot"></div>
+        </div>
+        <div class="pin-pad">
+            <button class="pin-btn" onclick="addPin('1')">1</button>
+            <button class="pin-btn" onclick="addPin('2')">2</button>
+            <button class="pin-btn" onclick="addPin('3')">3</button>
+            <button class="pin-btn" onclick="addPin('4')">4</button>
+            <button class="pin-btn" onclick="addPin('5')">5</button>
+            <button class="pin-btn" onclick="addPin('6')">6</button>
+            <button class="pin-btn" onclick="addPin('7')">7</button>
+            <button class="pin-btn" onclick="addPin('8')">8</button>
+            <button class="pin-btn" onclick="addPin('9')">9</button>
+            <button class="pin-btn clear" onclick="closeSecurity()">X</button>
+            <button class="pin-btn" onclick="addPin('0')">0</button>
+            <button class="pin-btn clear" onclick="clearPin()">C</button>
+        </div>
+    </div>
 
 </body>
 

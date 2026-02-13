@@ -5,27 +5,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEVICHERIA 21 - Caja</title>
-    <link rel="stylesheet" href="style.css?v=flex_fix_v4">
+    <link rel="stylesheet" href="style.css?v=1707845500">
     <link rel="icon" href="logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            const string = msg.toLowerCase();
+            const substring = "script error";
+            if (string.indexOf(substring) > -1) {
+                alert('Script Error: See Console for Details');
+            } else {
+                const message = [
+                    'Message: ' + msg,
+                    'URL: ' + url,
+                    'Line: ' + lineNo,
+                    'Column: ' + columnNo,
+                    'Error object: ' + JSON.stringify(error)
+                ].join(' - ');
+                // Create a visible error banner
+                const div = document.createElement('div');
+                div.style.position = 'fixed';
+                div.style.top = '0';
+                div.style.left = '0';
+                div.style.width = '100%';
+                div.style.background = 'red';
+                div.style.color = 'white';
+                div.style.zIndex = '9999';
+                div.style.padding = '10px';
+                div.style.textAlign = 'center';
+                div.innerText = "ERROR CRÍTICO: " + msg;
+                document.body.appendChild(div);
+                console.error(message);
+            }
+            return false;
+        };
+    </script>
 </head>
 
+
 <body>
+
+
 
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
             <img src="logo.png" style="height: 50px; border-radius: 5px;">
             <div>
                 <h1>💻 Caja / Cocina</h1>
-                <p style="margin: 0; color: #666; font-size: 14px;">CEVICHERIA 21 • Panel de Control</p>
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    CEVICHERIA 21 • Panel de Control •
+                    <span id="db-status" style="font-size: 12px; color: orange;">⏳ Conectando...</span>
+                    <span id="debug-info" style="font-size: 10px; color: #999; margin-left: 10px;"></span>
+                </p>
             </div>
         </div>
 
         <!-- MOVED STATS HERE -->
         <div class="dashboard-stats" style="margin: 0 20px;">
             <div class="stat-card stat-blue">
-                <h3>Mesas Ocupadas</h3>
-                <div class="value" id="statOccupied">-</div>
+                <h3>Mesas</h3>
+                <div class="value" id="statOccupied">- / 20</div>
             </div>
             <div class="stat-card stat-orange">
                 <h3>Ventas Hoy</h3>
@@ -34,13 +73,15 @@
         </div>
 
         <div style="display: flex; gap: 10px; align-items: center;">
-            <button onclick="forceUpdateSystem()" class="btn-secondary"
-                style="background:transparent; border:1px solid rgba(0,0,0,0.1); color:#546E7A; padding:8px 15px; border-radius:50px; font-size:12px; display:flex; gap:5px; align-items:center;">
-                🔄 ACTUALIZAR
-            </button>
-            <button onclick="openReport()" class="btn-report">📊 REPORTE</button>
-            <a href="index.html" class="btn-secondary"
-                style="padding: 10px 20px; border-radius: 50px; text-decoration: none;">Salir</a>
+            <a href="index.html" class="btn-exit" title="Cerrar Sesión">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>SALIR</span>
+            </a>
         </div>
     </header>
 
@@ -161,74 +202,133 @@
         // Grid now split into tablesLeft and tablesRight
         let currentMesaId = null;
 
+
         function renderTables() {
-            const db = getDB();
-            let occupiedCount = 0;
-
-            const leftContainer = document.getElementById('tablesLeft');
-            const rightContainer = document.getElementById('tablesRight');
-
-            if (!leftContainer || !rightContainer) return;
-
-            leftContainer.innerHTML = '';
-            rightContainer.innerHTML = '';
-
-            for (let i = 1; i <= 20; i++) {
-                const key = `mesa_${i}`;
-                const mesa = db[key];
-
-                // Card UI - Compact
-                const card = document.createElement('div');
-                card.className = `card-mesa ${mesa.status}`;
-                if (currentMesaId === i) card.style.border = "3px solid var(--primary)";
-
-                card.innerHTML = `
-                    <div class="plate-icon ${mesa.status}">
-                        <div class="plate-inner">
-                            <span style="font-size: 24px;">${mesa.status === 'free' ? '🍽️' : '🥘'}</span>
-                        </div>
-                        <div class="plate-number">${i}</div>
-                    </div>
-                    <div style="margin-top: 4px;">
-                        <span class="status-badge ${mesa.status}">
-                            ${mesa.status === 'free' ? 'LIBRE' : formatMoney(mesa.total)}
-                        </span>
-                    </div>
-                `;
-
-                if (mesa.status === 'occupied') {
-                    occupiedCount++;
-                    card.onclick = () => openBill(i);
-                } else {
-                    card.style.opacity = "0.7"; // Dim free tables slightly
+            try {
+                if (typeof getDB !== 'function') {
+                    // console.warn("getDB not ready yet");
+                    return;
                 }
 
-                if (i <= 10) {
-                    leftContainer.appendChild(card);
-                } else {
-                    rightContainer.appendChild(card);
+                // const status = document.getElementById('app-status'); // Element missing
+                // status.innerText = "Status: Starting render...";
+
+                const db = getDB();
+                const leftContainer = document.getElementById('tablesLeft');
+                const rightContainer = document.getElementById('tablesRight');
+
+                if (!leftContainer || !rightContainer) {
+                    console.error("ERROR: Containers missing");
+                    alert("ERROR FATAL: No se encuentran los contenedores de mesas (tablesLeft/tablesRight)");
+                    return;
                 }
+
+                leftContainer.innerHTML = '';
+                rightContainer.innerHTML = '';
+
+                // status.innerText = "Status: Containers cleared. Looping...";
+
+                let occupiedCount = 0;
+
+                for (let i = 1; i <= 20; i++) {
+                    try {
+                        // status.innerText = `Status: Processing Mesa ${i}...`;
+                        const key = `mesa_${i}`;
+                        const mesa = db[key];
+
+                        if (!mesa) {
+                            console.error("Missing data for:", key);
+                            continue;
+                        }
+
+                        if (mesa.status === 'occupied') {
+                            occupiedCount++;
+                        }
+
+                        // Card UI - Restore Original
+                        const card = document.createElement('div');
+                        card.className = `card-mesa ${mesa.status}`;
+                        if (currentMesaId === i) card.style.border = "3px solid var(--primary)";
+
+                        // Safe FormatMoney check
+                        const totalDisplay = (typeof window.formatMoney === 'function') ? window.formatMoney(mesa.total) : `S/ ${mesa.total}`;
+
+                        card.innerHTML = `
+                            <div class="plate-icon ${mesa.status}">
+                                <div class="plate-inner">
+                                    <span style="font-size: 24px;">${mesa.status === 'free' ? '🍽️' : '🥘'}</span>
+                                </div>
+                                <div class="plate-number">${i}</div>
+                            </div>
+                            <div style="margin-top: 4px;">
+                                <span class="status-badge ${mesa.status}">
+                                    ${mesa.status === 'free' ? 'LIBRE' : totalDisplay}
+                                </span>
+                            </div>
+                        `;
+
+                        if (mesa.status === 'occupied') {
+                            card.onclick = () => openBill(i);
+                        } else {
+                            card.style.opacity = "0.7";
+                        }
+
+                        // FIXED: Distribution logic
+                        if (i <= 10) {
+                            leftContainer.appendChild(card);
+                        } else {
+                            rightContainer.appendChild(card);
+                        }
+                    } catch (innerErr) {
+                        console.error(`Error rendering mesa ${i}`, innerErr);
+                    }
+                }
+
+                if (statOccupied) {
+                    statOccupied.innerText = `${occupiedCount} / 20`;
+                    // Force redraw
+                    statOccupied.style.display = 'none';
+                    statOccupied.offsetHeight;
+                    statOccupied.style.display = 'block';
+                }
+
+                // status.innerText = `Status: OK...`; (Removed to prevent crash)
+
+                // Confirm DB Keys
+                // alert(`DEBUG: Rendered ${occupiedCount} occupied. Total Keys: ${Object.keys(db).length}`);
+
+                // CRITICAL: Ensure we see something
+                if (Object.keys(db).length === 0) {
+                    alert("ALERTA CRITICA: Base de datos vacía. Regenerando...");
+                    // Force regenerate logic could go here
+                }
+
+                // Visible Debug
+                const debugInfo = document.getElementById('debug-info');
+                if (debugInfo) debugInfo.innerText = `[Mesas encontradas: 20]`;
+
+                // Report logic...
+                try {
+                    const report = getDailyReport();
+                    const statSales = document.getElementById('statSales');
+                    if (statSales) statSales.innerText = (typeof window.formatMoney === 'function') ? window.formatMoney(report.totalRevenue) : `S/ ${report.totalRevenue}`;
+                } catch (err) {
+                    console.error("Report error", err);
+                }
+
+            } catch (e) {
+                console.error("Render error:", e);
             }
+        }
 
-            // --- UPDATE STATS ---
-            const statOccupied = document.getElementById('statOccupied');
-            if (statOccupied) statOccupied.innerText = occupiedCount;
-
-            const report = getDailyReport();
-            const statSales = document.getElementById('statSales');
-            if (statSales) statSales.innerText = formatMoney(report.totalRevenue);
-
-            // Refresh detail view if open
-            if (currentMesaId && db[`mesa_${currentMesaId}`].status === 'occupied') {
-                renderActionPanel(currentMesaId);
-            } else if (currentMesaId && db[`mesa_${currentMesaId}`].status === 'free') {
-                document.getElementById('actionPanel').innerHTML = `
-                    <div style="text-align:center; color:#999; margin-top: 50px;">
-                        <p style="font-size: 40px; margin-bottom: 10px;">✅</p>
-                        <p>Mesa ${currentMesaId} liberada</p>
-                    </div>`;
-                currentMesaId = null;
-            }
+        function closeActionPanel() {
+            currentMesaId = null;
+            document.getElementById('actionPanel').innerHTML = `
+                <div style="text-align:center; color:#999; margin-top: 50px;">
+                    <p style="font-size: 40px; margin-bottom: 10px;">👈 👉</p>
+                    <p>Seleccione una mesa<br>para ver el detalle</p>
+                </div>`;
+            renderTables();
         }
 
         function openBill(id) {
@@ -254,8 +354,8 @@
                     <button onclick="closeTable()" style="background:#D32F2F; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
                         🗑️ CERRAR MESA
                     </button>
-                    <button onclick="currentMesaId = null; renderTables();" style="background:#ECEFF1; color:#333; border:1px solid #CFD8DC; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                        🚫 CANCELAR
+                    <button onclick="closeActionPanel()" style="background:#ECEFF1; color:#333; border:1px solid #CFD8DC; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        🔙 VOLVER
                     </button>
                     <button onclick="printComanda()" style="background:#FBC02D; color:#333; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
                         👨‍🍳 COCINA
@@ -419,12 +519,40 @@
             openBill(currentMesaId); // Refresh modal to show "En cocina"
         }
 
-        // Timer for auto-refresh
-        setInterval(renderTables, 2000);
 
-        // Initial render
-        renderTables();
+        // Timer for auto-refresh
+        setInterval(() => {
+            if (typeof getDB === 'function') renderTables();
+        }, 2000);
+
+        // Initial render REMOVED to avoid race condition
+        // renderTables(); 
     </script>
+
+    <!-- UPDATE BUTTON (Universal) -->
+    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
+        <div
+            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
+            Actualizar</div>
+    </div>
+
+    <style>
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
 </body>
 
 </html>

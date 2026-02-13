@@ -22,7 +22,10 @@ body {
     color: var(--text);
     margin: 0;
     padding: 20px;
-    height: 100vh;
+    min-height: 100vh;
+    /* Allow grow */
+    height: auto;
+    /* Remove fixed height */
     box-sizing: border-box;
     /* Animated Background */
     background: linear-gradient(-45deg, #ECEFF1, #E3F2FD, #FFFFFF, #ECEFF1);
@@ -30,8 +33,8 @@ body {
     animation: gradientBG 15s ease infinite;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    /* Prevent body scroll, handle inside components */
+    overflow: auto;
+    /* ENABLE SCROLL */
 }
 
 @keyframes gradientBG {
@@ -67,49 +70,154 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Landing Page */
+/* Landing Page Redesign */
 .landing-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+    /* Move content UP */
+    min-height: 100vh;
+    gap: 0;
+    /* REMOVED GAP completely */
+    padding: 20px;
+    padding-top: 60px;
+    /* Add top padding to position logo nicely */
+}
+
+.menu-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    /* Allow wrap on mobile */
     justify-content: center;
-    height: 100%;
-    gap: 30px;
-    flex: 1;
-    /* Take available space in flex body */
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 0;
+    /* REMOVED MARGIN completely */
+}
+
+.btn-install {
+    background: linear-gradient(135deg, #00C853, #64DD17);
+    /* Friendly Green */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    /* Smaller padding */
+    border-radius: 50px;
+    font-size: 14px;
+    /* Smaller font */
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: pulse 2s infinite;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Smaller gap */
+}
+
+.btn-install:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 200, 83, 0.4);
+    background: linear-gradient(135deg, #00E676, #69F0AE);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(0, 200, 83, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 200, 83, 0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .role-btn {
-    width: 320px;
-    height: 160px;
+    flex: 1;
+    min-width: 200px;
+    /* Base width */
+    max-width: 250px;
+    height: 180px;
+    /* Taller for icons */
     border: none;
-    border-radius: 12px;
-    font-size: 24px;
-    font-weight: 600;
+    border-radius: 20px;
+    /* Softer corners */
     color: white;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    box-shadow: var(--shadow);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+
+    /* Glassmorphism / Depth */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .role-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
+.role-btn .icon {
+    font-size: 48px;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.role-btn:hover .icon {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.role-btn span {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.role-btn small {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
+}
+
+/* Gradients */
 .btn-mesero {
-    background: linear-gradient(135deg, var(--primary), #1976D2);
+    background: linear-gradient(135deg, rgba(13, 71, 161, 0.9), rgba(25, 118, 210, 0.9));
 }
 
 .btn-caja {
-    background: linear-gradient(135deg, #2E7D32, #43A047);
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.9), rgba(67, 160, 71, 0.9));
+}
+
+.btn-reportes {
+    background: linear-gradient(135deg, rgba(69, 90, 100, 0.9), rgba(96, 125, 139, 0.9));
 }
 
 /* Common UI */
@@ -198,38 +306,42 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1.5fr 1fr;
     gap: 20px;
-    flex: 1;
-    /* Fill remaining space */
+    /* REMOVED FLEX: 1 TO PREVENT STRETCH */
     height: auto;
-    /* Remove fixed calc */
-    overflow: hidden;
-    padding-bottom: 0;
+    /* Allow grow */
+    overflow: visible;
+    /* Show everything */
+    padding-bottom: 20px;
     min-height: 0;
-    /* Critical for nested flex scrolling */
+    align-items: start;
+    /* PREVENT COLUMN STRETCH */
 }
 
 .tables-column {
     background: #e3f2fd;
-    padding: 15px;
+    padding: 5px;
+    /* WAS 15px */
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    height: 100%;
+    height: auto;
+    /* Allow grow */
+    min-height: 0;
+    overflow: visible;
+    /* Ensure inner scroll works */
 }
 
 .grid-mesas-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    overflow-y: auto;
-    padding-right: 5px;
-    padding-bottom: 50px;
-    /* Reducing slightly as flex:1 handles space better */
-    flex: 1;
-    /* Take REMAINING space, not 100% of parent */
+    overflow-y: visible;
+    /* Was auto */
+    padding-right: 0;
+    padding-bottom: 0px;
+    /* WAS 10px */
+    height: auto;
     min-height: 0;
-    /* Allow shrinking */
 }
 
 .action-panel {
@@ -243,21 +355,7 @@ h1 {
     border: 1px solid #e0e0e0;
 }
 
-/* Card Mesa Small for Split View */
-/* Card Mesa Small for Split View */
-.card-mesa {
-    background: transparent;
-    /* Clean background */
-    padding: 5px;
-    text-align: center;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    box-shadow: none;
-    /* Remove shadows */
-    font-weight: 600;
-    transition: all 0.2s;
-}
+
 
 /* CSS Plate Design */
 .plate-icon {
@@ -553,6 +651,32 @@ h1 {
     filter: brightness(110%);
 }
 
+.btn-exit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 8px 16px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid #ffcdd2;
+}
+
+.btn-exit:hover {
+    background-color: #c62828;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(198, 40, 40, 0.3);
+}
+
+.btn-exit svg {
+    stroke-width: 2.5;
+}
+
 .order-actions {
     gap: 15px;
 }
@@ -565,6 +689,8 @@ h1 {
     #ticket-print-area,
     #ticket-print-area * {
         visibility: visible;
+        display: block;
+        /* FORCE DISPLAY BLOCK */
     }
 
     #ticket-print-area {
@@ -582,6 +708,11 @@ h1 {
     width: 100%;
     max-width: 80mm;
     text-align: center;
+}
+
+/* Ticket Print Area - HIDDEN BY DEFAULT */
+#ticket-print-area {
+    display: none;
 }
 
 /* PIN Security Modal */

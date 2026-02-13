@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEVICHERIA 21 - Reportes</title>
+    <link rel="stylesheet" href="style.css?v=1707845500">
+    <link rel="icon" href="logo.png">
+    <style>
+        body {
+            overflow: hidden;
+            /* Prevent global scroll */
+        }
+
+        .reports-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: calc(100vh - 80px);
+            /* Fill screen minus header */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .date-picker-large {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            outline: none;
+        }
+
+        .stats-summary {
+            background: #E3F2FD;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header style="background: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="logo.png" style="height: 40px; border-radius: 5px; border: 2px solid white;">
+            <h1 style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">📊 Reportes</h1>
+        </div>
+        <a href="index.html" class="btn-secondary"
+            style="padding: 10px 20px; text-decoration: none; text-align: center; background: rgba(255,255,255,0.2); color:white; border: 1px solid rgba(255,255,255,0.4);">
+            Salir
+        </a>
+    </header>
+
+    <div class="reports-container">
+
+        <!-- SIDEBAR (LEFT): Controls & Stats -->
+        <div class="sidebar">
+            <div style="text-align: center;">
+                <label
+                    style="display: block; font-weight: bold; margin-bottom: 10px; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px;">
+                    📅 Seleccionar Fecha
+                </label>
+                <input type="date" id="reportDate" onchange="runReport()" class="date-picker-large">
+            </div>
+
+            <div class="stats-summary">
+                <p style="margin: 0; color: #555; font-size: 14px;">Total Ventas</p>
+                <h1 id="totalRevenue" style="margin: 5px 0; color: var(--success); font-size: 36px;">S/ 0.00</h1>
+            </div>
+
+            <div class="stats-summary" style="background: #FFF3E0;">
+                <p style="margin: 0; color: #555; font-size: 14px;">Transacciones</p>
+                <h1 id="totalCount" style="margin: 5px 0; color: var(--accent); font-size: 36px;">0</h1>
+            </div>
+
+            <div style="flex: 1;"></div> <!-- Spacer -->
+
+            <button class="btn-primary" onclick="printCurrentReport()"
+                style="height: 60px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary); box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);">
+                🖨️ IMPRIMIR REPORTE
+            </button>
+        </div>
+
+        <!-- MAIN CONTENT (RIGHT): Details List -->
+        <div class="main-content">
+            <div style="padding: 20px; background: var(--primary); color: white;">
+                <h2 style="margin: 0; font-size: 20px;">📋 Detalle de Productos</h2>
+            </div>
+            <div class="items-container active" id="reportDetails"
+                style="display: block; flex: 1; overflow-y: auto; padding: 0;">
+
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999;">
+                    <div style="font-size: 50px; margin-bottom: 10px;">📅</div>
+                    <p>Seleccione una fecha para ver el detalle de ventas.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UPDATE BUTTON (Universal) -->
+    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
+        <div
+            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
+            Actualizar</div>
+    </div>
+
+    <style>
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
+
+    <script type="module">
+        import './script.js?v=force';
+
+        // Set Today as default
+        window.onload = function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+
+            // Wait for DB init
+            setTimeout(() => {
+                if (typeof runReport === 'function') runReport();
+            }, 1000);
+        };
+    </script>
+
+    <script>
+        let currentReportData = null;
+
+        function runReport() {
+            const dateInput = document.getElementById('reportDate').value; // YYYY-MM-DD
+            if (!dateInput) return;
+
+            // Convert input YYYY-MM-DD to locale Date String format used in DB
+            // NOTE: DB uses new Date().toLocaleDateString() which depends on locale.
+            // Better to normalize. But for now let's assume system locale match.
+            // Actually, script.js stores ISO string in 'date' field, but getDailyReport filters by locale string.
+            // We should add a new helper in script.js to get report by ISO date or YYYY-MM-DD.
+
+            // Let's rely on the module exposing a generic getReport(dateObject)
+            const stats = getReportByDate(dateInput);
+            currentReportData = stats;
+
+            // Update UI
+            document.getElementById('totalRevenue').innerText = formatMoney(stats.totalRevenue);
+            document.getElementById('totalCount').innerText = stats.salesCount;
+
+            const list = document.getElementById('reportDetails');
+
+            if (stats.salesCount === 0) {
+                list.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999;">
+                        <div style="font-size: 50px; margin-bottom: 10px;">😔</div>
+                        <p>No se encontraron ventas para esta fecha.</p>
+                    </div>`;
+                return;
+            }
+
+            // Generate Item List
+            // stats.productCounts = { "Ceviche": 5, ... }
+            let html = '<table style="width:100%; border-collapse: collapse;">';
+            html += '<tr style="background:#f5f5f5; text-align:left; color:#666; font-size:14px;"><th style="padding:15px 20px;">PRODUCTO</th><th style="padding:15px 20px; text-align:right;">CANTIDAD</th></tr>';
+
+            for (const [name, count] of Object.entries(stats.productCounts)) {
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 15px 20px; font-weight: 500; color: var(--text);">${name}</td>
+                        <td style="padding: 15px 20px; text-align: right; font-weight: bold; color: var(--primary);">${count}</td>
+                    </tr>
+                `;
+            }
+            html += '</table>';
+            list.innerHTML = html;
+        }
+
+        function printCurrentReport() {
+            if (!currentReportData || currentReportData.salesCount === 0) {
+                alert("No hay datos para imprimir");
+                return;
+            }
+            const dateInput = document.getElementById('reportDate').value;
+            printReport(dateInput, currentReportData);
+        }
+    </script>
+</body>
+
+</html>
