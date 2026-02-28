@@ -4,224 +4,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEVICHERIA 21 - Reportes</title>
-    <link rel="stylesheet" href="style.css?v=1707845500">
+    <title>CEVICHERIA 21 - Premium Reportes</title>
+    <link rel="stylesheet" href="style.css?v=27.0">
     <link rel="icon" href="logo.png">
-    <style>
-        body {
-            overflow: hidden;
-            /* Prevent global scroll */
-        }
-
-        .reports-container {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            height: calc(100vh - 80px);
-            /* Fill screen minus header */
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .sidebar {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .main-content {
-            background: white;
-            border-radius: 16px;
-            padding: 0;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .date-picker-large {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            color: var(--primary);
-            outline: none;
-        }
-
-        .stats-summary {
-            background: #E3F2FD;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-    </style>
 </head>
 
-<body>
-
-    <header style="background: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="logo.png" style="height: 40px; border-radius: 5px; border: 2px solid white;">
-            <h1 style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">📊 Reportes</h1>
+<body class="glass">
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="logo.png" style="height: 50px; border-radius: 12px; border: 1px solid var(--gold);">
+            <div>
+                <h1>📊 <span>BALANCE Y REPORTES</span></h1>
+                <p style="margin: 0; color: var(--text-muted); font-size: 11px; letter-spacing: 1px;">ANÁLISIS DE
+                    NEGOCIO PREMIUM</p>
+            </div>
         </div>
-        <a href="index.html" class="btn-secondary"
-            style="padding: 10px 20px; text-decoration: none; text-align: center; background: rgba(255,255,255,0.2); color:white; border: 1px solid rgba(255,255,255,0.4);">
-            Salir
-        </a>
+        <a href="index.html" class="btn-exit"
+            style="background: rgba(239, 68, 68, 0.1); color: var(--accent); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 12px;">CERRAR
+            SESIÓN</a>
     </header>
 
-    <div class="reports-container">
-
-        <!-- SIDEBAR (LEFT): Controls & Stats -->
-        <div class="sidebar">
-            <div style="text-align: center;">
-                <label
-                    style="display: block; font-weight: bold; margin-bottom: 10px; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px;">
-                    📅 Seleccionar Fecha
-                </label>
-                <input type="date" id="reportDate" onchange="runReport()" class="date-picker-large">
+    <div class="reports-main-layout"
+        style="display: grid; grid-template-columns: 300px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px);">
+        <!-- LEFT: Calendar sidebar -->
+        <div class="reports-sidebar glass"
+            style="padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto;">
+            <div id="calendar-container">
+                <h3 style="color: var(--gold); font-size: 14px; margin-top: 0; text-align: center;">📅 CALENDARIO</h3>
+                <div id="custom-calendar-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <button onclick="changeMonth(-1)"
+                        style="background:none; border:none; color:var(--gold); cursor:pointer; font-weight:800;">&lt;</button>
+                    <span id="currentMonthYear" style="font-weight: 800; font-size: 13px; color: white;"></span>
+                    <button onclick="changeMonth(1)"
+                        style="background:none; border:none; color:var(--gold); cursor:pointer; font-weight:800;">&gt;</button>
+                </div>
+                <div id="calendar-grid"
+                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;">
+                    <!-- Days header -->
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">D</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">L</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">M</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">M</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">J</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">V</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">S</div>
+                    <!-- Days will be injected here -->
+                </div>
+                <div id="calendar-days"
+                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 5px;"></div>
             </div>
 
-            <div class="stats-summary">
-                <p style="margin: 0; color: #555; font-size: 14px;">Total Ventas</p>
-                <h1 id="totalRevenue" style="margin: 5px 0; color: var(--success); font-size: 36px;">S/ 0.00</h1>
+            <div style="border-top: 1px solid var(--card-border); padding-top: 20px;">
+                <h3 style="color: var(--gold); font-size: 13px; margin-top: 0;">REPORTE SELECCIONADO</h3>
+                <div id="selectedInfo"
+                    style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border);">
+                    <div id="reportLabel" style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px;">DIA
+                        CARGADO</div>
+                    <div id="reportValue" style="font-size: 16px; font-weight: 800; color: white;">-</div>
+                </div>
             </div>
 
-            <div class="stats-summary" style="background: #FFF3E0;">
-                <p style="margin: 0; color: #555; font-size: 14px;">Transacciones</p>
-                <h1 id="totalCount" style="margin: 5px 0; color: var(--accent); font-size: 36px;">0</h1>
+            <div class="stat-card" style="width: 100%; border-color: rgba(16, 185, 129, 0.3);">
+                <span style="font-size: 10px; color: var(--text-muted);">INGRESOS</span>
+                <div class="value" id="totalRevenue" style="font-size: 28px; color: var(--success); font-weight: 900;">
+                    S/ 0.00</div>
             </div>
 
-            <div style="flex: 1;"></div> <!-- Spacer -->
-
-            <button class="btn-primary" onclick="printCurrentReport()"
-                style="height: 60px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary); box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);">
-                🖨️ IMPRIMIR REPORTE
+            <button class="btn-primary" onclick="window.print()" style="width: 100%; margin-top: auto;">
+                🖨️ IMPRIMIR VISTA
             </button>
         </div>
 
-        <!-- MAIN CONTENT (RIGHT): Details List -->
-        <div class="main-content">
-            <div style="padding: 20px; background: var(--primary); color: white;">
-                <h2 style="margin: 0; font-size: 20px;">📋 Detalle de Productos</h2>
-            </div>
-            <div class="items-container active" id="reportDetails"
-                style="display: block; flex: 1; overflow-y: auto; padding: 0;">
-
-                <div
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999;">
-                    <div style="font-size: 50px; margin-bottom: 10px;">📅</div>
-                    <p>Seleccione una fecha para ver el detalle de ventas.</p>
+        <!-- RIGHT: Detailed Content -->
+        <div class="reports-content" style="display: flex; flex-direction: column; gap: 20px; overflow-y: hidden;">
+            <!-- TOP FILTERS -->
+            <div class="glass"
+                style="padding: 15px 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 15px;">
+                    <button id="viewDaily" class="btn-secondary active" onclick="switchView('daily')"
+                        style="font-size: 12px; font-weight: 800; padding: 10px 20px;">DETALLE DIARIO</button>
+                    <button id="viewWeekly" class="btn-secondary" onclick="switchView('weekly')"
+                        style="font-size: 12px; font-weight: 800; padding: 10px 20px;">RESUMEN SEMANAL</button>
                 </div>
+                <div id="weekSelector" style="display: none; align-items: center; gap: 10px;">
+                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">SEMANA:</span>
+                    <input type="week" id="weekInput" onchange="runWeeklyReport()" class="glass-input"
+                        style="padding: 5px 15px; font-size: 13px;">
+                </div>
+            </div>
 
+            <!-- DATA AREA -->
+            <div id="reportArea" class="glass" style="flex: 1; border-radius: 24px; padding: 30px; overflow-y: auto;">
+                <!-- Content will be injected here -->
             </div>
         </div>
-
     </div>
-
-    <!-- UPDATE BUTTON (Universal) -->
-    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
-        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
-        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
-        <div
-            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
-            Actualizar</div>
-    </div>
-
-    <style>
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-    </style>
 
     <script type="module">
-        import './script.js?v=force';
-
-        // Set Today as default
-        window.onload = function () {
+        import './script.js?v=v12';
+        window.onload = () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
-
-            // Wait for DB init
-            setTimeout(() => {
-                if (typeof runReport === 'function') runReport();
-            }, 1000);
+            setTimeout(() => { if (typeof runReport === 'function') runReport(); }, 1500);
         };
     </script>
-
     <script>
-        let currentReportData = null;
+        let currentView = 'daily';
+        let selectedDate = new Date();
+        let calendarDate = new Date();
+        let history = [];
 
-        function runReport() {
-            const dateInput = document.getElementById('reportDate').value; // YYYY-MM-DD
-            if (!dateInput) return;
+        window.onload = () => {
+            // Wait for DB to load from script.js
+            setTimeout(() => {
+                const db = window.getDB();
+                if (db && db.dailySales) {
+                    history = db.dailySales;
+                    console.log("History loaded:", history.length);
+                }
+                initCalendar();
+                runDailyReport();
+            }, 1000);
+        };
 
-            // Convert input YYYY-MM-DD to locale Date String format used in DB
-            // NOTE: DB uses new Date().toLocaleDateString() which depends on locale.
-            // Better to normalize. But for now let's assume system locale match.
-            // Actually, script.js stores ISO string in 'date' field, but getDailyReport filters by locale string.
-            // We should add a new helper in script.js to get report by ISO date or YYYY-MM-DD.
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('viewDaily').classList.toggle('active', view === 'daily');
+            document.getElementById('viewWeekly').classList.toggle('active', view === 'weekly');
+            document.getElementById('weekSelector').style.display = view === 'weekly' ? 'flex' : 'none';
 
-            // Let's rely on the module exposing a generic getReport(dateObject)
-            const stats = getReportByDate(dateInput);
-            currentReportData = stats;
+            if (view === 'daily') runDailyReport();
+            else runWeeklyReport();
+        }
 
-            // Update UI
-            document.getElementById('totalRevenue').innerText = formatMoney(stats.totalRevenue);
-            document.getElementById('totalCount').innerText = stats.salesCount;
+        // --- CALENDAR LOGIC ---
+        function initCalendar() {
+            const container = document.getElementById('calendar-days');
+            const tit = document.getElementById('currentMonthYear');
+            container.innerHTML = '';
 
-            const list = document.getElementById('reportDetails');
+            const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+            tit.innerText = `${monthNames[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
 
-            if (stats.salesCount === 0) {
-                list.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999;">
-                        <div style="font-size: 50px; margin-bottom: 10px;">😔</div>
-                        <p>No se encontraron ventas para esta fecha.</p>
+            const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
+            const daysInMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0).getDate();
+
+            // Empty slots
+            for (let i = 0; i < firstDay; i++) {
+                container.innerHTML += '<div></div>';
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isSelected = selectedDate.getDate() === d && selectedDate.getMonth() === calendarDate.getMonth() && selectedDate.getFullYear() === calendarDate.getFullYear();
+                const hasSales = checkSalesOnDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d));
+
+                const btn = document.createElement('div');
+                btn.innerText = d;
+                btn.style.cssText = `
+                    padding: 8px; font-size: 11px; cursor: pointer; border-radius: 5px; font-weight: 700;
+                    background: ${isSelected ? 'var(--gold)' : (hasSales ? 'rgba(16, 185, 129, 0.15)' : 'none')};
+                    color: ${isSelected ? 'black' : (hasSales ? 'var(--success)' : 'white')};
+                    border: ${isSelected ? 'none' : '1px solid rgba(255,255,255,0.05)'};
+                `;
+                btn.onclick = () => {
+                    selectedDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
+                    selectedDate.setHours(0, 0, 0, 0);
+                    initCalendar();
+                    if (currentView === 'daily') runDailyReport();
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        function checkSalesOnDate(date) {
+            const ds = date.toDateString();
+            return history.some(h => new Date(h.timestamp).toDateString() === ds);
+        }
+
+        function changeMonth(dir) {
+            calendarDate.setMonth(calendarDate.getMonth() + dir);
+            initCalendar();
+        }
+
+        // --- REPORTING LOGIC ---
+        function runDailyReport() {
+            document.getElementById('reportLabel').innerText = "VISTA DIARIA";
+            document.getElementById('reportValue').innerText = selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }).toUpperCase();
+
+            const area = document.getElementById('reportArea');
+            const targetDateStr = selectedDate.toDateString();
+            const dailySales = history.filter(h => new Date(h.timestamp).toDateString() === targetDateStr);
+
+            const total = dailySales.reduce((sum, s) => sum + s.total, 0);
+            document.getElementById('totalRevenue').innerText = `S/ ${total.toFixed(2)}`;
+
+            if (dailySales.length === 0) {
+                area.innerHTML = `<div style="text-align:center; padding: 100px; opacity: 0.5;"><h3>SIN VENTAS</h3><p>No hay registros para este día</p></div>`;
+                return;
+            }
+
+            // Group by hour
+            const hourly = {};
+            dailySales.forEach(sale => {
+                const hour = new Date(sale.timestamp).getHours();
+                if (!hourly[hour]) hourly[hour] = { total: 0, items: {} };
+                hourly[hour].total += sale.total;
+                sale.items.forEach(item => {
+                    hourly[hour].items[item.name] = (hourly[hour].items[item.name] || 0) + 1;
+                });
+            });
+
+            let html = `<h2 style="color: var(--gold); margin-top: 0; font-size: 18px;">📊 DETALLE DE VENTAS</h2>`;
+
+            // Sort hours descending
+            const sortedHours = Object.keys(hourly).sort((a, b) => b - a);
+
+            sortedHours.forEach(h => {
+                const hourStr = `${h.padStart(2, '0')}:00 - ${(parseInt(h) + 1).toString().padStart(2, '0')}:00`;
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; overflow: hidden;">
+                        <div style="background: rgba(212, 175, 55, 0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items:center;">
+                            <span style="font-weight: 800; color: var(--gold); font-size: 13px;">🕒 ${hourStr}</span>
+                            <span style="font-weight: 900; color: white;">S/ ${hourly[h].total.toFixed(2)}</span>
+                        </div>
+                        <div style="padding: 15px 20px;">
+                            ${Object.entries(hourly[h].items).map(([name, count]) => `
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <span style="color: var(--text-muted); font-weight: 600;">${name.toUpperCase()}</span>
+                                    <span style="color: white; font-weight: 800;">x${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            area.innerHTML = html;
+        }
+
+        function runWeeklyReport() {
+            const weekInput = document.getElementById('weekInput').value;
+            if (!weekInput) {
+                document.getElementById('reportArea').innerHTML = `
+                    <div style="text-align:center; padding: 100px; opacity: 0.5;">
+                        <h3>VISTA SEMANAL</h3>
+                        <p>Por favor seleccione una semana arriba para ver el resumen</p>
                     </div>`;
                 return;
             }
 
-            // Generate Item List
-            // stats.productCounts = { "Ceviche": 5, ... }
-            let html = '<table style="width:100%; border-collapse: collapse;">';
-            html += '<tr style="background:#f5f5f5; text-align:left; color:#666; font-size:14px;"><th style="padding:15px 20px;">PRODUCTO</th><th style="padding:15px 20px; text-align:right;">CANTIDAD</th></tr>';
+            document.getElementById('reportLabel').innerText = "RESUMEN SEMANAL";
+            document.getElementById('reportValue').innerText = weekInput;
 
-            for (const [name, count] of Object.entries(stats.productCounts)) {
+            // Simple parser for YYYY-Wnn
+            const [year, week] = weekInput.split('-W').map(Number);
+
+            // Get sales for that week
+            const filtered = history.filter(h => {
+                const d = new Date(h.timestamp);
+                const firstDayOfYear = new Date(d.getFullYear(), 0, 1);
+                const pastDaysOfYear = (d - firstDayOfYear) / 86400000;
+                const dWeek = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+                return d.getFullYear() === year && dWeek === week;
+            });
+
+            const total = filtered.reduce((sum, s) => sum + s.total, 0);
+            document.getElementById('totalRevenue').innerText = `S/ ${total.toFixed(2)}`;
+
+            // Summary by day
+            const dailyTotals = { "Lun": 0, "Mar": 0, "Mié": 0, "Jue": 0, "Vie": 0, "Sáb": 0, "Dom": 0 };
+            const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+            filtered.forEach(sale => {
+                const day = dayNames[new Date(sale.timestamp).getDay()];
+                dailyTotals[day] += sale.total;
+            });
+
+            let html = `<h2 style="color: var(--gold); margin-top: 0; font-size: 18px;">📈 RESUMEN DE LA SEMANA</h2>`;
+            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">`;
+
+            ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].forEach(day => {
+                const val = dailyTotals[day];
                 html += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 15px 20px; font-weight: 500; color: var(--text);">${name}</td>
-                        <td style="padding: 15px 20px; text-align: right; font-weight: bold; color: var(--primary);">${count}</td>
-                    </tr>
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; border: 1px solid var(--card-border); text-align: center;">
+                        <div style="color: var(--text-muted); font-size: 10px; font-weight: 800; margin-bottom: 10px;">${day.toUpperCase()}</div>
+                        <div style="font-size: 18px; font-weight: 900; color: ${val > 0 ? 'var(--gold)' : 'rgba(255,255,255,0.2)'}">
+                            S/ ${val.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            // Show top products of the week
+            const products = {};
+            filtered.forEach(s => s.items.forEach(i => products[i.name] = (products[i.name] || 0) + 1));
+            const top = Object.entries(products).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            if (top.length > 0) {
+                html += `
+                    <div style="margin-top: 40px;">
+                        <h3 style="color: white; font-size: 14px; border-left: 4px solid var(--gold); padding-left: 10px;">MÁS VENDIDOS DE LA SEMANA</h3>
+                        <div style="margin-top: 15px;">
+                            ${top.map(([name, count]) => `
+                                <div style="display:flex; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-weight: 600; color: var(--text-muted);">${name.toUpperCase()}</span>
+                                    <span style="font-weight: 800; color: var(--gold);">${count} uds.</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 `;
             }
-            html += '</table>';
-            list.innerHTML = html;
-        }
 
-        function printCurrentReport() {
-            if (!currentReportData || currentReportData.salesCount === 0) {
-                alert("No hay datos para imprimir");
-                return;
-            }
-            const dateInput = document.getElementById('reportDate').value;
-            printReport(dateInput, currentReportData);
+            document.getElementById('reportArea').innerHTML = html;
         }
     </script>
 </body>

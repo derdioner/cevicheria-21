@@ -7,7 +7,7 @@ const DB_DOC_ID = 'tables';
 
 // Initialize with default structure immediately to prevent UI crash
 let localData = {};
-for (let i = 1; i <= 20; i++) {
+for (let i = 1; i <= 28; i++) {
     localData[`mesa_${i}`] = {
         id: i,
         status: 'free',
@@ -38,9 +38,12 @@ function initDB() {
             }
 
             console.log("Firestore Update Received");
-            // DIRECT UPDATE
+            // DIRECT UPDATE FOR ACTIVE VIEWS
             if (typeof window.renderTables === 'function') {
                 window.renderTables();
+            }
+            if (typeof window.renderMesas === 'function') {
+                window.renderMesas();
             }
 
             // Update Connection Status UI
@@ -53,7 +56,7 @@ function initDB() {
             // First time setup
             console.log("Creating new DB structure...");
             const initialData = {};
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 28; i++) {
                 initialData[`mesa_${i}`] = {
                     id: i,
                     status: 'free',
@@ -97,14 +100,21 @@ function getDB() {
 }
 
 function saveDB(data) {
-    // Update local immediately for UI responsiveness
+    // Update local immediately for UI responsiveness AND localStorage to fix race conditions before printing
     localData = data;
+    localStorage.setItem('cv21_db', JSON.stringify(data));
 
     // Sync to Firestore
     const docRef = doc(db, DB_COLLECTION, DB_DOC_ID);
-    setDoc(docRef, data)
-        .then(() => console.log("Data synced to Firestore"))
-        .catch((e) => console.error("Error syncing:", e));
+    return setDoc(docRef, data)
+        .then(() => {
+            console.log("Data synced to Firestore");
+            return true;
+        })
+        .catch((e) => {
+            console.error("Error syncing:", e);
+            throw e;
+        });
 }
 
 // HISTORY FUNCTIONS (Migrated to Firestore)
@@ -121,7 +131,7 @@ function addToHistory(mesaData) {
     const entry = {
         date: new Date().toISOString(), // ISO format for easy sorting
         timestamp: Date.now(),
-        mesaId: mesaData.id,
+        mesaId: mesaData.id || 'N/A',
         items: mesaData.items,
         total: mesaData.total
     };
@@ -248,7 +258,15 @@ const MENU = [
     { id: 1101, name: 'Anticucho + Rachi + Mollejita', price: 30.00, category: 'TRIO PARRILLERO' },
 
     // DUO PARRILLERO
-    { id: 1201, name: 'Anticucho + Rachi o Mollejita', price: 28.00, category: 'DUO PARRILLERO' },
+    {
+        id: 1201,
+        name: 'Duo Parrillero',
+        price: 28.00,
+        category: 'DUO PARRILLERO',
+        hasOptions: true,
+        choices: ['Anticucho', 'Rachi', 'Mollejita'],
+        maxChoices: 2
+    },
 
     // CRIOLLOS
     { id: 1301, name: 'Saltado de Pollo', price: 28.00, category: 'CRIOLLOS' },
@@ -323,11 +341,18 @@ function printComanda() {
         return;
     }
 
-    const itemsToPrint = mesa.items.filter(i => !i.printed);
-    // If everything is printed, ask to reprint ALL? 
-    // Using confirm might block, let's just print EVERYTHING if no new items, 
-    // or maybe just last items? Let's print everything for simplicity but mark logic.
-    let list = itemsToPrint.length > 0 ? itemsToPrint : mesa.items;
+    const itemsToPrint = mesa.items.filter(i => !i.printed && i.category !== 'BEBIDAS');
+
+    // If no new food items, just mark everything as printed to clear UI badges
+    if (itemsToPrint.length === 0) {
+        console.log("No new food items to print to kitchen.");
+        mesa.items.forEach(item => item.printed = true);
+        saveDB(db);
+        if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
+        return;
+    }
+
+    let list = itemsToPrint;
 
     // Mark items as printed
     mesa.items.forEach(item => item.printed = true);
@@ -335,9 +360,13 @@ function printComanda() {
     if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
 
     const itemsHtml = list.map(item => `
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
-            <span>${item.name}</span>
-            <span>${formatMoney(item.price)}</span>
+        <div style="margin-bottom:8px; font-family:monospace; border-bottom:1px dashed #ccc; padding-bottom:5px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px;">
+                <span>${item.name}</span>
+                <span>${formatMoney(item.price)}</span>
+            </div>
+            ${item.options ? `<div style="font-size:12px; color:#333; margin-left:10px;">➔ ${item.options.join(' + ')}</div>` : ''}
+            ${item.note ? `<div style="font-size:12px; color:#D32F2F; margin-left:10px; font-weight:bold;">📝 NOTA: ${item.note}</div>` : ''}
         </div>
     `).join('');
 
@@ -371,9 +400,13 @@ function printBill() {
     const mesa = db[`mesa_${currentMesaId}`];
 
     const itemsHtml = mesa.items.map(item => `
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
-            <span>${item.name}</span>
-            <span>${formatMoney(item.price)}</span>
+        <div style="margin-bottom:5px; font-family:monospace; font-size:13px; border-bottom:1px dashed #eee; padding-bottom:2px;">
+            <div style="display:flex; justify-content:space-between;">
+                <span>${item.name}</span>
+                <span>${formatMoney(item.price)}</span>
+            </div>
+            ${item.options ? `<div style="font-size:11px; color:#666; font-style:italic;">(${item.options.join(' + ')})</div>` : ''}
+            ${item.note ? `<div style="font-size:11px; color:#333;">Nota: ${item.note}</div>` : ''}
         </div>
     `).join('');
 
@@ -564,10 +597,8 @@ window.printReport = printReport;
 // Init on load
 console.log("Script loaded, attempting initDB...");
 try {
-    if (typeof initDB === 'function') {
-        initDB();
-        console.log("initDB called.");
-    }
+    initDB();
+    console.log("initDB called automatically from script.js");
 } catch (e) {
     console.error("FATAL: initDB failed", e);
 }

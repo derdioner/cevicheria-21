@@ -4,552 +4,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEVICHERIA 21 - Caja</title>
-    <link rel="stylesheet" href="style.css?v=1707845500">
+    <title>CEVICHERIA 21 - Premium Caja</title>
+    <link rel="stylesheet" href="style.css?v=27.6">
     <link rel="icon" href="logo.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
-            const string = msg.toLowerCase();
-            const substring = "script error";
-            if (string.indexOf(substring) > -1) {
-                alert('Script Error: See Console for Details');
-            } else {
-                const message = [
-                    'Message: ' + msg,
-                    'URL: ' + url,
-                    'Line: ' + lineNo,
-                    'Column: ' + columnNo,
-                    'Error object: ' + JSON.stringify(error)
-                ].join(' - ');
-                // Create a visible error banner
-                const div = document.createElement('div');
-                div.style.position = 'fixed';
-                div.style.top = '0';
-                div.style.left = '0';
-                div.style.width = '100%';
-                div.style.background = 'red';
-                div.style.color = 'white';
-                div.style.zIndex = '9999';
-                div.style.padding = '10px';
-                div.style.textAlign = 'center';
-                div.innerText = "ERROR CRÍTICO: " + msg;
-                document.body.appendChild(div);
-                console.error(message);
-            }
-            return false;
-        };
-    </script>
+    <link rel="icon" href="logo.png">
 </head>
 
-
-<body>
-
-
-
+<body class="glass">
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="logo.png" style="height: 50px; border-radius: 5px;">
+            <img src="logo.png" style="height: 50px; border-radius: 12px; border: 1px solid var(--gold);">
             <div>
-                <h1>💻 Caja / Cocina</h1>
-                <p style="margin: 0; color: #666; font-size: 14px;">
-                    CEVICHERIA 21 • Panel de Control •
-                    <span id="db-status" style="font-size: 12px; color: orange;">⏳ Conectando...</span>
-                    <span id="debug-info" style="font-size: 10px; color: #999; margin-left: 10px;"></span>
+                <h1>💻 <span>CAJA / CONTROL</span></h1>
+                <p style="margin: 0; color: var(--text-muted); font-size: 12px; letter-spacing: 1px;">
+                    SISTEMA DE GESTIÓN • <span id="db-status" style="color: var(--gold);">⏳
+                        SINCRONIZANDO...</span>
                 </p>
             </div>
         </div>
 
-        <!-- MOVED STATS HERE -->
-        <div class="dashboard-stats" style="margin: 0 20px;">
-            <div class="stat-card stat-blue">
-                <h3>Mesas</h3>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Mesas Activas</span>
                 <div class="value" id="statOccupied">- / 20</div>
             </div>
-            <div class="stat-card stat-orange">
-                <h3>Ventas Hoy</h3>
+            <div class="stat-card">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Ventas Hoy</span>
                 <div class="value" id="statSales">S/ 0.00</div>
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="index.html" class="btn-exit" title="Cerrar Sesión">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span>SALIR</span>
-            </a>
-        </div>
+        <a href="index.html" class="btn-exit"
+            style="background: rgba(239, 68, 68, 0.1); color: var(--accent); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 12px;">
+            CERRAR SESIÓN
+        </a>
     </header>
 
     <div class="cashier-dashboard">
         <!-- LEFT: Tables 1-10 -->
-        <div class="tables-column">
-            <h3 style="margin-top:0; color:#546E7A;">Mesas 1 - 10</h3>
-            <div class="grid-mesas-split" id="tablesLeft"></div>
+        <div class="tables-column glass" style="padding: 10px;">
+            <h3
+                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align: center;">
+                BLOQUE 1-10</h3>
+            <div class="grid-mesas" id="tablesLeft"
+                style="grid-template-columns: 1fr 1fr !important; gap: 6px; padding: 5px;"></div>
         </div>
 
         <!-- CENTER: Action Panel -->
-        <div class="action-panel" id="actionPanel">
-            <div style="text-align:center; color:#999; margin-top: 50px;">
-                <p style="font-size: 40px; margin-bottom: 10px;">👈 👉</p>
-                <p>Seleccione una mesa<br>para ver el detalle</p>
+        <div class="action-panel glass" id="actionPanel">
+            <div style="text-align:center; color: var(--text-muted); margin-top: 100px;">
+                <div style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;">🍽️ </div>
+                <p style="font-weight: 600; font-size: 18px;">PANEL DE CONTROL</p>
+                <p style="font-size: 13px; opacity: 0.7;">Seleccione una mesa para gestionar<br>pedidos y cobranza</p>
             </div>
         </div>
 
         <!-- RIGHT: Tables 11-20 -->
-        <div class="tables-column">
-            <h3 style="margin-top:0; color:#546E7A;">Mesas 11 - 20</h3>
-            <div class="grid-mesas-split" id="tablesRight"></div>
+        <div class="tables-column glass" style="padding: 10px;">
+            <h3
+                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align: center;">
+                BLOQUE 11-20</h3>
+            <div class="grid-mesas" id="tablesRight"
+                style="grid-template-columns: 1fr 1fr !important; gap: 6px; padding: 5px;"></div>
         </div>
     </div>
 
 
-
-    <!-- BILLING MODAL -->
-    <div id="billModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Cuenta Mesa X</h2>
-
-            <div id="billDetails" style="flex: 1; overflow-y: auto;">
-                <!-- List -->
-            </div>
-
-            <h1 style="text-align: right; color: var(--primary);" id="billTotal">Total: S/ 0.00</h1>
-
-            <div class="order-actions">
-                <button class="btn-secondary" style="background:#e53935; color: white;" onclick="closeTable()">🗑️
-                    CERRAR MESA</button>
-                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn-primary" style="background:#FFA000;" onclick="printComanda()">👨‍🍳 COMANDA</button>
-                <button class="btn-primary" onclick="printBill()">🖨️ IMPRIMIR CUENTA</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- REPORT MODAL -->
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color: var(--primary); margin-top: 0;">📊 Reporte de Ventas (Hoy)</h2>
-            <div
-                style="background: #f4f6f8; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
-                <p style="margin: 0; color: #666;">Total Recaudado</p>
-                <h1 style="margin: 5px 0; color: #2E7D32; font-size: 40px;" id="reportTotalRevenue">S/ 0.00</h1>
-                <p style="margin: 0; font-size: 14px; color: #888;" id="reportSalesCount">0 ventas realizadas</p>
-            </div>
-
-            <h3 style="margin-bottom: 10px;">Productos Más Vendidos</h3>
-            <div style="flex: 1; overflow-y: auto;">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th style="text-align: right;">Cantidad</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportProductsBody">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <button class="btn-secondary" onclick="closeModal()" style="margin-top: 20px; width: 100%;">Cerrar
-                Reporte</button>
-        </div>
-    </div>
-
-    <!-- PRINT TEMPLATE (Hidden from screen, visible in print) -->
-    <div id="ticket-print-area" style="visibility: hidden;">
-        <div class="ticket">
-            <img id="printLogo" src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" style="width: 50px;">
-            <h3 id="printHeader">CEVICHERÍA 21</h3>
-            <p id="printSubheader">Av. Del Mar 123, Contamana</p>
-            <p>--------------------------------</p>
-            <p id="printMesa">MESA: X</p>
-            <p id="printDate">FECHA: --/--/--</p>
-            <p>--------------------------------</p>
-            <div id="printItems" style="text-align: left;">
-                <!-- Items go here -->
-            </div>
-            <p>--------------------------------</p>
-            <div class="total" id="printTotal">TOTAL: S/ 0.00</div>
-
-            <div id="printFooter">
-                <p>Escanea para Yapear:</p>
-                <!-- QR IMAGE -->
-                <img src="yape_qr.png" class="qr" alt="QR Yape">
-                <p>¡Gracias por su preferencia!</p>
-            </div>
-            <br><br>.
-        </div>
-    </div>
+    <!-- Preload the Yape image so it's ready for print -->
 
     <script type="module">
-        import './script.js?v=force';
+        import { db as firestoreDb } from './firebase-config.js';
+        import './script.js?v=v12';
 
-        // Wait for script to load and DB to init
-        window.onload = function () {
-            setTimeout(() => {
-                if (typeof renderTables === 'function') renderTables();
-            }, 1000); // Small delay to allow Firestore to fetch
-        };
-    </script>
-    <script>
-        const reportModal = document.getElementById('reportModal');
-        // Grid now split into tablesLeft and tablesRight
         let currentMesaId = null;
+        let allMesas = {};
 
-
-        function renderTables() {
-            try {
-                if (typeof getDB !== 'function') {
-                    // console.warn("getDB not ready yet");
-                    return;
+        // Integration with script.js motor
+        window.onload = () => {
+            setTimeout(() => {
+                if (typeof window.initDB === 'function') {
+                    window.initDB();
+                    console.log("Caja: initDB called");
                 }
+                syncFromScript();
+            }, 500);
+        };
 
-                // const status = document.getElementById('app-status'); // Element missing
-                // status.innerText = "Status: Starting render...";
+        function syncFromScript() {
+            if (typeof window.getDB === 'function') {
+                allMesas = window.getDB();
+                renderDashboard();
+                updateStats();
+                if (currentMesaId) showMesaDetails(currentMesaId);
 
-                const db = getDB();
-                const leftContainer = document.getElementById('tablesLeft');
-                const rightContainer = document.getElementById('tablesRight');
-
-                if (!leftContainer || !rightContainer) {
-                    console.error("ERROR: Containers missing");
-                    alert("ERROR FATAL: No se encuentran los contenedores de mesas (tablesLeft/tablesRight)");
-                    return;
-                }
-
-                leftContainer.innerHTML = '';
-                rightContainer.innerHTML = '';
-
-                // status.innerText = "Status: Containers cleared. Looping...";
-
-                let occupiedCount = 0;
-
-                for (let i = 1; i <= 20; i++) {
-                    try {
-                        // status.innerText = `Status: Processing Mesa ${i}...`;
-                        const key = `mesa_${i}`;
-                        const mesa = db[key];
-
-                        if (!mesa) {
-                            console.error("Missing data for:", key);
-                            continue;
-                        }
-
-                        if (mesa.status === 'occupied') {
-                            occupiedCount++;
-                        }
-
-                        // Card UI - Restore Original
-                        const card = document.createElement('div');
-                        card.className = `card-mesa ${mesa.status}`;
-                        if (currentMesaId === i) card.style.border = "3px solid var(--primary)";
-
-                        // Safe FormatMoney check
-                        const totalDisplay = (typeof window.formatMoney === 'function') ? window.formatMoney(mesa.total) : `S/ ${mesa.total}`;
-
-                        card.innerHTML = `
-                            <div class="plate-icon ${mesa.status}">
-                                <div class="plate-inner">
-                                    <span style="font-size: 24px;">${mesa.status === 'free' ? '🍽️' : '🥘'}</span>
-                                </div>
-                                <div class="plate-number">${i}</div>
-                            </div>
-                            <div style="margin-top: 4px;">
-                                <span class="status-badge ${mesa.status}">
-                                    ${mesa.status === 'free' ? 'LIBRE' : totalDisplay}
-                                </span>
-                            </div>
-                        `;
-
-                        if (mesa.status === 'occupied') {
-                            card.onclick = () => openBill(i);
-                        } else {
-                            card.style.opacity = "0.7";
-                        }
-
-                        // FIXED: Distribution logic
-                        if (i <= 10) {
-                            leftContainer.appendChild(card);
-                        } else {
-                            rightContainer.appendChild(card);
-                        }
-                    } catch (innerErr) {
-                        console.error(`Error rendering mesa ${i}`, innerErr);
-                    }
-                }
-
-                if (statOccupied) {
-                    statOccupied.innerText = `${occupiedCount} / 20`;
-                    // Force redraw
-                    statOccupied.style.display = 'none';
-                    statOccupied.offsetHeight;
-                    statOccupied.style.display = 'block';
-                }
-
-                // status.innerText = `Status: OK...`; (Removed to prevent crash)
-
-                // Confirm DB Keys
-                // alert(`DEBUG: Rendered ${occupiedCount} occupied. Total Keys: ${Object.keys(db).length}`);
-
-                // CRITICAL: Ensure we see something
-                if (Object.keys(db).length === 0) {
-                    alert("ALERTA CRITICA: Base de datos vacía. Regenerando...");
-                    // Force regenerate logic could go here
-                }
-
-                // Visible Debug
-                const debugInfo = document.getElementById('debug-info');
-                if (debugInfo) debugInfo.innerText = `[Mesas encontradas: 20]`;
-
-                // Report logic...
-                try {
-                    const report = getDailyReport();
-                    const statSales = document.getElementById('statSales');
-                    if (statSales) statSales.innerText = (typeof window.formatMoney === 'function') ? window.formatMoney(report.totalRevenue) : `S/ ${report.totalRevenue}`;
-                } catch (err) {
-                    console.error("Report error", err);
-                }
-
-            } catch (e) {
-                console.error("Render error:", e);
+                const statusEl = document.getElementById('db-status');
+                statusEl.style.color = 'var(--accent)';
+                statusEl.innerText = '✅ ONLINE (FIRESTORE)';
             }
         }
 
-        function closeActionPanel() {
-            currentMesaId = null;
-            document.getElementById('actionPanel').innerHTML = `
-                <div style="text-align:center; color:#999; margin-top: 50px;">
-                    <p style="font-size: 40px; margin-bottom: 10px;">👈 👉</p>
-                    <p>Seleccione una mesa<br>para ver el detalle</p>
-                </div>`;
-            renderTables();
+        // Exposed for script.js to call on every remote update
+        window.renderTables = () => {
+            syncFromScript();
+        };
+
+        function updateStats() {
+            let occupied = 0;
+            let totalSales = 0;
+            Object.values(allMesas).forEach(m => {
+                if (m.status === 'occupied') occupied++;
+                if (m.status === 'paid' && m.lastUpdate && new Date(m.lastUpdate).toDateString() === new Date().toDateString()) {
+                }
+            });
+            document.getElementById('statOccupied').innerText = `${occupied} / 28`;
         }
 
-        function openBill(id) {
+        function renderDashboard() {
+            const left = document.getElementById('tablesLeft');
+            const right = document.getElementById('tablesRight');
+            left.innerHTML = '';
+            right.innerHTML = '';
+
+            for (let i = 1; i <= 28; i++) {
+                const mesa = allMesas[i] || { status: 'free' };
+                const div = document.createElement('div');
+                div.className = `mesa-card ${mesa.status}`;
+                div.innerHTML = `
+                    <div style="font-size: 10px; opacity: 0.6;">MESA</div>
+                    <div style="font-size: 18px; font-weight: 900;">${i}</div>
+                    <div style="font-size: 10px; margin-top:5px; color: ${mesa.status === 'occupied' ? '#EF4444' : 'inherit'}">
+                        ${mesa.status === 'occupied' ? 'S/ ' + (mesa.total || 0).toFixed(2) : 'LIBRE'}
+                    </div>
+                `;
+                div.onclick = () => showMesaDetails(i);
+                if (i <= 14) left.appendChild(div);
+                else right.appendChild(div);
+            }
+        }
+
+        function showMesaDetails(id) {
             currentMesaId = id;
-            renderActionPanel(id);
-            renderTables(); // To highlight active border
-        }
-
-        function renderActionPanel(id) {
-            const db = getDB();
-            const mesa = db[`mesa_${id}`];
+            const mesa = allMesas[id] || { status: 'free', items: [], total: 0 };
             const panel = document.getElementById('actionPanel');
 
-            panel.innerHTML = `
-                <div class="action-header" style="display:block; text-align:center;">
-                    <h1 style="margin:0; font-size: 36px; color:var(--primary); text-transform:uppercase;">CUENTA MESA ${id}</h1>
-                    <div style="font-size:40px; font-weight:800; color:#2E7D32; margin-top:5px;">
-                        ${formatMoney(mesa.total)}
+            if (mesa.status === 'free') {
+                panel.innerHTML = `
+                    <div style="text-align:center; padding: 50px;">
+                        <h2 style="color: var(--gold);">MESA ${id}</h2>
+                        <p style="color: var(--text-muted);">Esta mesa está disponible actualmente.</p>
+                        <button class="btn-primary" onclick="alert('Usa el panel de mesero para abrir mesas')">ABRIR MESA</button>
                     </div>
-                </div>
-
-                <div class="action-footer" style="border-top:none; border-bottom:2px solid #f5f5f5; padding-top:0; padding-bottom:15px; margin-bottom:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button onclick="closeTable()" style="background:#D32F2F; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                        🗑️ CERRAR MESA
-                    </button>
-                    <button onclick="closeActionPanel()" style="background:#ECEFF1; color:#333; border:1px solid #CFD8DC; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                        🔙 VOLVER
-                    </button>
-                    <button onclick="printComanda()" style="background:#FBC02D; color:#333; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                        👨‍🍳 COCINA
-                    </button>
-                    <button onclick="printBill()" style="background:#fff; color:#1976D2; border:2px solid #1976D2; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                        🖨️ IMPRIMIR CUENTA
-                    </button>
-                </div>
-
-                <div class="action-body">
-                    ${mesa.items.length === 0 ? '<div style="text-align:center; padding:20px; color:#999;">Sin pedidos aún</div>' : ''}
-                    ${mesa.items.map(item => `
-                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:12px 0;">
-                            <span>${item.name} 
-                                ${item.printed ?
-                    '<span style="font-size:11px; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px;">En cocina</span>' :
-                    '<span style="font-size:11px; color:red; background:#ffebee; padding:2px 6px; border-radius:4px;">NUEVO</span>'}
-                            </span>
-                            <span style="font-weight:600;">${formatMoney(item.price)}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function openReport() {
-            const report = getDailyReport();
-            document.getElementById('reportTotalRevenue').innerText = formatMoney(report.totalRevenue);
-            document.getElementById('reportSalesCount').innerText = `${report.salesCount} ventas realizadas`;
-
-            const tbody = document.getElementById('reportProductsBody');
-
-            // Convert to array and sort by count (descending)
-            const products = Object.keys(report.productCounts)
-                .sort((a, b) => report.productCounts[b] - report.productCounts[a]);
-
-            if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#999;">No hay ventas hoy</td></tr>';
-            } else {
-                tbody.innerHTML = products.map(name => {
-                    const count = report.productCounts[name];
-                    const details = report.productDetails[name] || []; // Fallback to empty array just in case
-
-                    // Format details: "Mesa 1 (12:30), Mesa 2 (12:45)"
-                    const detailHtml = details.map(d =>
-                        `<span style="display:inline-block; background:#e3f2fd; color:#0d47a1; padding:2px 6px; border-radius:4px; margin:2px; font-size:11px;">Mesa ${d.mesa} - ${d.time}</span>`
-                    ).join(' ');
-
-                    return `
-                    <tr>
-                        <td>
-                            <div style="font-weight:bold;">${name}</div>
-                            <div style="margin-top:4px;">${detailHtml}</div>
-                        </td>
-                        <td style="text-align: right; vertical-align:top; font-weight: bold; font-size:16px;">${count}</td>
-                    </tr>
-                    `;
-                }).join('');
-            }
-
-            reportModal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modal.style.display = 'none';
-            reportModal.style.display = 'none';
-        }
-
-        function closeTable() {
-            if (!confirm('¿Seguro que deseas cerrar la mesa y liberar el espacio?')) return;
-
-            const db = getDB();
-            const key = `mesa_${currentMesaId}`;
-
-            // 1. SAVE TO HISTORY
-            addToHistory(db[key]);
-
-            // 2. RESET TABLE
-            db[key].status = 'free';
-            db[key].items = [];
-            db[key].total = 0;
-            saveDB(db);
-
-            // 3. UI RESET
-            closeModal();
-            renderTables();
-        }
-
-        function printBill() {
-            const db = getDB();
-            const mesa = db[`mesa_${currentMesaId}`];
-
-            // RESTORE STANDARD BILL
-            document.getElementById('printHeader').innerText = 'CEVICHERÍA 21';
-            document.getElementById('printSubheader').style.display = 'block';
-            document.getElementById('printLogo').style.display = 'inline';
-            document.getElementById('printTotal').style.display = 'block';
-            document.getElementById('printFooter').style.display = 'block';
-
-            document.getElementById('printMesa').innerText = `MESA: ${currentMesaId}`;
-            document.getElementById('printDate').innerText = new Date().toLocaleString();
-            document.getElementById('printItems').innerHTML = mesa.items.map(item => `
-                <div style="display:flex; justify-content:space-between;">
-                    <span>${item.name}</span>
-                    <span>${item.price.toFixed(2)}</span>
-                </div>
-            `).join('');
-            document.getElementById('printTotal').innerText = `TOTAL: ${formatMoney(mesa.total)}`;
-
-            window.print();
-        }
-
-        function printComanda() {
-            const db = getDB();
-            const key = `mesa_${currentMesaId}`;
-            const mesa = db[key];
-
-            // Filter UNPRINTED items
-            const newItems = mesa.items.filter(item => !item.printed);
-
-            if (newItems.length === 0) {
-                alert('⚠️ No hay items nuevos para enviar a cocina.');
+                `;
                 return;
             }
 
-            // CONFIGURE FOR KITCHEN
-            document.getElementById('printHeader').innerText = '🔥 COMANDA COCINA 🔥';
-            document.getElementById('printSubheader').style.display = 'none';
-            document.getElementById('printLogo').style.display = 'none';
-            document.getElementById('printTotal').style.display = 'none'; // No total
-            document.getElementById('printFooter').style.display = 'none'; // No QR
+            panel.innerHTML = `
+                <div class="mesa-detail-view">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="margin:0; color: var(--gold);">MESA ${id}</h2>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 24px; font-weight: 900; color: var(--accent);">S/ ${(mesa.total || 0).toFixed(2)}</div>
+                            <span class="badge">OCUPADA</span>
+                        </div>
+                    </div>
 
-            document.getElementById('printMesa').innerText = `MESA: ${currentMesaId}`;
-            document.getElementById('printDate').innerText = new Date().toLocaleTimeString(); // Only time matters
+                    <div style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px;">
+                        ${mesa.items.map((item, idx) => `
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    ${(!item.printed && item.category !== 'BEBIDAS') ? `<span style="background: var(--accent); color: white; font-size: 8px; font-weight: 900; padding: 2px 4px; border-radius: 4px; animation: pulse 1s infinite;">NUEVO</span>` : ''}
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 14px; color: var(--blue-light);">${item.name}</div>
+                                        ${item.comment ? `<div style="font-size: 11px; color: var(--gold);">📝 ${item.comment}</div>` : ''}
+                                    </div>
+                                </div>
+                                <div style="font-weight: 700; color: var(--gold);">S/ ${item.price.toFixed(2)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
 
-            // Group items for kitchen (e.g. 2x Ceviche)
-            const summary = {};
-            newItems.forEach(i => {
-                summary[i.name] = (summary[i.name] || 0) + 1;
-            });
-
-            document.getElementById('printItems').innerHTML = Object.entries(summary).map(([name, count]) => `
-                <div style="display:flex; justify-content:space-between; font-size: 20px; font-weight: bold; margin-bottom: 5px; border-bottom: 1px dashed black;">
-                    <span>${count} x ${name}</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                        <button class="btn-secondary" id="btnTicket" style="font-size: 11px;">🖨️ CUENTA</button>
+                        <button class="btn-primary" id="btnCocina" style="font-size: 11px; background: #D32F2F; border-color: #B71C1C;">🍳 COCINA</button>
+                    </div>
+                    <button class="btn-primary" id="btnPagar" style="width: 100%; margin-top: 10px; height: 50px; font-weight: 900;">💰 REGISTRAR PAGO</button>
                 </div>
-            `).join('');
+            `;
 
-            window.print();
-
-            // MARK AS PRINTED
-            mesa.items.forEach(item => {
-                // Determine if item is in newItems list (by reference or ID + addedAt)
-                // Since we filtered from mesa.items, we can just iterate and mark.
-                // Wait, filters create shallow copies of arrays but objects are references? Yes.
-                if (!item.printed) {
-                    item.printed = true;
-                }
-            });
-
-            saveDB(db);
-            openBill(currentMesaId); // Refresh modal to show "En cocina"
+            document.getElementById('btnTicket').onclick = () => printBill(id);
+            document.getElementById('btnCocina').onclick = () => printComanda();
+            document.getElementById('btnPagar').onclick = () => processPayment(id);
         }
 
+        async function processPayment(id) {
+            const mesaKey = `mesa_${id}`;
+            const mesaDetail = allMesas[mesaKey];
+            if (!mesaDetail || mesaDetail.total === 0) return;
 
-        // Timer for auto-refresh
-        setInterval(() => {
-            if (typeof getDB === 'function') renderTables();
-        }, 2000);
+            if (!confirm(`¿Confirmar pago de S/ ${mesaDetail.total.toFixed(2)} para la Mesa ${id}?`)) return;
 
-        // Initial render REMOVED to avoid race condition
-        // renderTables(); 
+            try {
+                // Add to history
+                if (typeof window.addToHistory === 'function') {
+                    window.addToHistory(mesaDetail);
+                }
+
+                // Reset table
+                mesaDetail.status = 'free';
+                mesaDetail.items = [];
+                mesaDetail.total = 0;
+                mesaDetail.lastUpdate = new Date().toISOString();
+
+                // Save to Firestore
+                if (typeof window.saveDB === 'function') {
+                    await window.saveDB(allMesas);
+                }
+
+                alert('Pago procesado correctamente');
+                currentMesaId = null;
+                renderDashboard();
+                updateStats();
+                document.getElementById('actionPanel').innerHTML = `
+                    <div style="text-align:center; color: var(--text-muted); margin-top: 100px;">
+                        <div style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;">🍽️ </div>
+                        <p style="font-weight: 600; font-size: 18px;">PAGO COMPLETADO</p>
+                        <p style="font-size: 13px; opacity: 0.7;">Mesa liberada con éxito</p>
+                    </div>`;
+            } catch (error) {
+                console.error("Error al procesar pago:", error);
+                alert('Error al procesar pago');
+            }
+        }
+
+        function printBill(id) {
+            const mesa = allMesas[id];
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+
+            doc.write(`
+                <html>
+                <head>
+                    <base href="${window.location.href}">
+                    <style>
+                        body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; font-size: 12px; text-align: center; }
+                        .header { font-weight: bold; font-size: 1.4em; border-bottom: 2px dashed #000; margin-bottom: 10px; }
+                        .item { display: flex; justify-content: space-between; margin: 3px 0; }
+                        .total { font-weight: bold; font-size: 1.2em; border-top: 1px solid #000; padding: 5px 0; }
+                        .qr-container { margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
+                        .qr-img { width: 120px; height: 120px; margin-top: 5px; }
+                        hr { border: 0; border-top: 1px dashed #000; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">CEVICHERÍA 21</div>
+                    <div>Experiencia Premium</div>
+                    <hr>
+                    <div style="font-weight: bold;">MESA: ${id}</div>
+                    <div>${new Date().toLocaleString()}</div>
+                    <hr>
+                    <div style="text-align: left; margin: 10px 0;">
+                        ${mesa.items.map(i => `
+                            <div class="item">
+                                <span>${i.name}</span>
+                                <span>${i.price.toFixed(2)}</span>
+                            </div>
+                            ${i.comment ? `<div style="font-size: 10px; color: #555;">- ${i.comment}</div>` : ''}
+                        `).join('')}
+                    </div>
+                    <hr>
+                    <div class="total">TOTAL: S/ ${mesa.total.toFixed(2)}</div>
+                    <script>
+                        window.onload = () => { window.print(); window.close(); };
+                    <\/script>
+</body>
+
+</html>
+`);
+            doc.close();
+        }
+
+        function formatMoney(n) {
+            return `S/ ${(n || 0).toFixed(2)}`;
+        }
     </script>
 
-    <!-- UPDATE BUTTON (Universal) -->
-    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
-        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
-        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
-        <div
-            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
-            Actualizar</div>
-    </div>
-
     <style>
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
+        .mesa-detail-view {
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
             }
 
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>

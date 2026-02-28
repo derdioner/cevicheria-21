@@ -4,139 +4,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEVICHERIA 21</title>
-    <link rel="stylesheet" href="style.css?v=1707845500">
+    <title>CEVICHERIA 21 - Premium POS</title>
+    <link rel="stylesheet" href="style.css?v=27.4">
     <link rel="manifest" href="manifest.json?v=3">
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="shortcut icon" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    <meta name="theme-color" content="#DC0000">
-    <meta name="msapplication-TileColor" content="#DC0000">
-    <meta name="msapplication-TileImage" content="logo.png">
+    <meta name="theme-color" content="#05192D">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
+            navigator.serviceWorker.register('sw.js?v=12')
                 .then((registration) => {
-                    console.log('Service Worker Registered');
-                    registration.onupdatefound = () => {
-                        const installingWorker = registration.installing;
-                        installingWorker.onstatechange = () => {
-                            if (installingWorker.state === 'installed') {
-                                if (navigator.serviceWorker.controller) {
-                                    console.log('New content is available; please refresh.');
-                                    window.location.reload();
-                                } else {
-                                    console.log('Content is cached for offline use.');
-                                }
-                            }
-                        };
-                    };
+                    console.log('SW Registered');
                 })
                 .catch((err) => console.log('SW Error:', err));
-
-            let refreshing;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (refreshing) return;
-                window.location.reload();
-                refreshing = true;
-            });
         }
     </script>
+    <style>
+        /* CRITICAL PIN CSS - EMBEDDED TO PREVENT CACHE LAYOUT BREAKS */
+        .pin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 25, 45, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 99999;
+            /* Max Priority */
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .pin-display {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .pin-dot {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #D4AF37;
+            /* Gold */
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .pin-dot.filled {
+            background: #D4AF37;
+            box-shadow: 0 0 15px #D4AF37;
+            transform: scale(1.1);
+        }
+
+        .pin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .pin-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 28px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+        }
+
+        .pin-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #D4AF37;
+        }
+
+        .pin-btn:active {
+            background: #D4AF37;
+            color: #05192D;
+            transform: scale(0.9);
+        }
+
+        .pin-btn.clear {
+            color: #FF4D4D;
+        }
+
+        @media (max-height: 600px) {
+            .pin-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+
+            .pin-pad {
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
     <div class="landing-container">
-        <!-- Logo bigger, moved down -->
-        <img src="logo.png" class="floating-logo"
-            style="width: 200px; height: auto; border-radius: 10px; margin-bottom: 30px;">
+        <div class="landing-content">
+            <img src="logo.png" class="floating-logo" alt="Logo">
 
-        <div class="menu-grid">
-            <button class="role-btn btn-mesero" onclick="openSecurity('mesero')">
-                <div class="icon">📱</div>
-                <span>MESERO</span>
-                <small>Pedidos</small>
-            </button>
+            <h1
+                style="color: white; font-size: clamp(2rem, 8vw, 3.5rem); margin-bottom: 10px; text-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+                CEVICHERIA 21</h1>
+            <p
+                style="color: var(--text-muted); font-size: 1rem; margin-bottom: 40px; letter-spacing: 2px; text-transform: uppercase;">
+                Experiencia Gastronómica Premium</p>
 
-            <button class="role-btn btn-caja" onclick="openSecurity('caja')">
-                <div class="icon">💻</div>
-                <span>CAJA</span>
-                <small>Cobrar</small>
-            </button>
+            <div class="menu-grid">
+                <button class="role-btn" onclick="requestPIN('mesero')">
+                    <div class="icon">📱</div>
+                    <span>MESERO</span>
+                    <small>Atención en Mesas</small>
+                </button>
 
-            <button class="role-btn btn-reportes" onclick="openSecurity('reportes')">
-                <div class="icon">📊</div>
-                <span>REPORTES</span>
-                <small>Historial</small>
-            </button>
+                <button class="role-btn" onclick="requestPIN('caja')">
+                    <div class="icon">💻</div>
+                    <span>CAJA</span>
+                    <small>Control de Ventas</small>
+                </button>
+
+                <button class="role-btn" onclick="requestPIN('reportes')">
+                    <div class="icon">📊</div>
+                    <span>REPORTES</span>
+                    <small>Análisis de Negocio</small>
+                </button>
+            </div>
+
+            <div style="margin-top: 50px; display: flex; justify-content: center;">
+                <button id="installBtn" class="btn-install btn-primary"
+                    style="display: none; background: var(--gold); color: #000;">
+                    📥 INSTALAR APP PREMIUM
+                </button>
+            </div>
+
+            <p style="margin-top: 40px; color: var(--text-muted); font-size: 11px; opacity: 0.5;">
+                Versión 27.0 (PREMIUM) • Powered by Stark-Dev
+            </p>
         </div>
     </div>
 
-    <!-- INSTALL BUTTON (Hidden by default) -->
-    <button id="btnInstall" onclick="installPWA()" class="btn-install" style="display: none;">
-        📲 Instalar Aplicación
-    </button>
-    </div>
-
+    <!-- UPDATE BUTTON (Universal) -->
     <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
-        style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
         <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
         <div
             style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
             Actualizar</div>
     </div>
 
-    <script src="script.js?v=force"></script>
+    <!-- PIN PAD MODAL -->
+    <div id="pinModal" class="pin-modal" style="display: none;">
+        <h2 style="color: var(--gold); margin-bottom: 10px; font-weight: 800; letter-spacing: 2px;">ACCESO RESTRINGIDO
+        </h2>
+        <p id="pinMsg" style="color: white; margin-bottom: 30px; opacity: 0.7;">Ingrese su código de seguridad</p>
+
+        <div class="pin-display">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+
+        <div class="pin-pad">
+            <button class="pin-btn" onclick="pressPin('1')">1</button>
+            <button class="pin-btn" onclick="pressPin('2')">2</button>
+            <button class="pin-btn" onclick="pressPin('3')">3</button>
+            <button class="pin-btn" onclick="pressPin('4')">4</button>
+            <button class="pin-btn" onclick="pressPin('5')">5</button>
+            <button class="pin-btn" onclick="pressPin('6')">6</button>
+            <button class="pin-btn" onclick="pressPin('7')">7</button>
+            <button class="pin-btn" onclick="pressPin('8')">8</button>
+            <button class="pin-btn" onclick="pressPin('9')">9</button>
+            <button class="pin-btn clear" onclick="clearPin()"
+                style="color: var(--accent); border-color: rgba(239,68,68,0.3);">DEL</button>
+            <button class="pin-btn" onclick="pressPin('0')">0</button>
+            <button class="pin-btn" onclick="closePin()"
+                style="color: white; border-color: rgba(255,255,255,0.2);">X</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js?v=v12"></script>
     <script>
         // PWA INSTALL LOGIC
         let deferredPrompt;
-        const btnInstall = document.getElementById('btnInstall');
+        const installBtn = document.getElementById('installBtn');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome 67 and earlier from automatically showing the prompt
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             deferredPrompt = e;
-            // Update UI to notify the user they can add to home screen
-            btnInstall.style.display = 'block';
+            installBtn.style.display = 'block';
         });
 
-        function installPWA() {
-            if (!deferredPrompt) return;
-            // Show the prompt
-            deferredPrompt.prompt();
-            // Wait for the user to respond to the prompt
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the A2HS prompt');
-                } else {
-                    console.log('User dismissed the A2HS prompt');
-                }
-                deferredPrompt = null;
-                btnInstall.style.display = 'none';
+        if (installBtn) {
+            installBtn.addEventListener('click', () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
             });
         }
 
+        // PIN PAD LOGIC
         let currentPin = "";
         let targetRole = "";
+        const pinModal = document.getElementById('pinModal');
+        const pinDots = document.querySelectorAll('.pin-dot');
+        const pinMsg = document.getElementById('pinMsg');
 
-        function openSecurity(role) {
+        function requestPIN(role) {
             targetRole = role;
             currentPin = "";
-            updateDots();
-            document.getElementById('securityModal').style.display = 'flex';
+            updatePinDisplay();
+            pinMsg.textContent = 'Ingrese su código de seguridad';
+            pinModal.style.display = 'flex';
         }
 
-        function closeSecurity() {
-            document.getElementById('securityModal').style.display = 'none';
+        function closePin() {
+            pinModal.style.display = 'none';
+            currentPin = "";
+            updatePinDisplay();
         }
 
-        function addPin(num) {
+        function pressPin(num) {
             if (currentPin.length < 4) {
                 currentPin += num;
-                updateDots();
+                updatePinDisplay();
                 if (currentPin.length === 4) {
                     setTimeout(validatePin, 300);
                 }
@@ -144,77 +257,54 @@
         }
 
         function clearPin() {
-            currentPin = "";
-            updateDots();
+            currentPin = currentPin.slice(0, -1);
+            updatePinDisplay();
         }
 
-        function updateDots() {
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById(`d${i}`);
-                if (i <= currentPin.length) {
+        function updatePinDisplay() {
+            pinDots.forEach((dot, index) => {
+                if (index < currentPin.length) {
                     dot.classList.add('filled');
                 } else {
                     dot.classList.remove('filled');
                 }
-            }
+            });
         }
 
         function validatePin() {
-            // CREDENCIALES
-            // Caja: 2121
-            // Mesero 1: 9999
-            // Mesero 2: 7777
-
             let valid = false;
-
-            if (targetRole === 'caja') {
-                if (currentPin === '2121') valid = true;
-            } else if (targetRole === 'reportes') {
-                if (currentPin === '2027') valid = true;
-            } else if (targetRole === 'mesero') {
-                if (currentPin === '9999') {
-                    localStorage.setItem('currentUser', 'Mesero 1');
-                    valid = true;
-                } else if (currentPin === '7777') {
-                    localStorage.setItem('currentUser', 'Mesero 2');
-                    valid = true;
-                }
+            if (targetRole === 'caja' && currentPin === '2121') valid = true;
+            else if (targetRole === 'reportes' && currentPin === '2027') valid = true;
+            else if (targetRole === 'mesero') {
+                if (currentPin === '9999') { localStorage.setItem('currentUser', 'Mesero 1'); valid = true; }
+                else if (currentPin === '7777') { localStorage.setItem('currentUser', 'Mesero 2'); valid = true; }
             }
 
             if (valid) {
                 window.location.href = targetRole + '.html';
             } else {
-                alert("PIN Incorrecto");
-                clearPin();
+                pinMsg.textContent = 'PIN Incorrecto. Intente de nuevo.';
+                pinMsg.style.color = '#FF4D4D';
+                currentPin = "";
+                updatePinDisplay();
             }
         }
+
+        // KEYBOARD SUPPORT
+        window.addEventListener('keydown', (e) => {
+            if (pinModal.style.display !== 'flex') return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                pressPin(e.key);
+            } else if (e.key === 'Enter') {
+                if (currentPin.length === 4) validatePin();
+            } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                clearPin();
+            } else if (e.key === 'Escape') {
+                closePin();
+            }
+        });
     </script>
-
-    <!-- PIN Security Modal -->
-    <div id="securityModal" class="pin-modal">
-        <div style="color: white; font-size: 24px; margin-bottom: 20px; font-weight: bold;">INGRESE PIN</div>
-        <div class="pin-display">
-            <div id="d1" class="pin-dot"></div>
-            <div id="d2" class="pin-dot"></div>
-            <div id="d3" class="pin-dot"></div>
-            <div id="d4" class="pin-dot"></div>
-        </div>
-        <div class="pin-pad">
-            <button class="pin-btn" onclick="addPin('1')">1</button>
-            <button class="pin-btn" onclick="addPin('2')">2</button>
-            <button class="pin-btn" onclick="addPin('3')">3</button>
-            <button class="pin-btn" onclick="addPin('4')">4</button>
-            <button class="pin-btn" onclick="addPin('5')">5</button>
-            <button class="pin-btn" onclick="addPin('6')">6</button>
-            <button class="pin-btn" onclick="addPin('7')">7</button>
-            <button class="pin-btn" onclick="addPin('8')">8</button>
-            <button class="pin-btn" onclick="addPin('9')">9</button>
-            <button class="pin-btn clear" onclick="closeSecurity()">X</button>
-            <button class="pin-btn" onclick="addPin('0')">0</button>
-            <button class="pin-btn clear" onclick="clearPin()">C</button>
-        </div>
-    </div>
-
 </body>
 
 </html>

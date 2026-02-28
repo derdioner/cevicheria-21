@@ -4,339 +4,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEVICHERIA 21 - Mesero</title>
-    <link rel="stylesheet" href="style.css?v=1707845500">
+    <title>CEVICHERIA 21 - Premium Mesero</title>
+    <link rel="stylesheet" href="style.css?v=27.6">
     <link rel="icon" href="logo.png">
-    <script>
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
-            const div = document.createElement('div');
-            div.style.position = 'fixed';
-            div.style.top = '0';
-            div.style.left = '0';
-            div.style.width = '100%';
-            div.style.background = 'red';
-            div.style.color = 'white';
-            div.style.zIndex = '9999';
-            div.style.padding = '10px';
-            div.style.textAlign = 'center';
-            div.innerText = "ERROR CRÍTICO: " + msg;
-            document.body.appendChild(div);
-            return false;
-        };
-    </script>
 </head>
 
-<body>
-
-    <header>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="logo.png" style="height: 40px; border-radius: 5px;">
+<body class="glass">
+    <header style="height: 70px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="logo.png" style="height: 45px; border-radius: 10px; border: 1px solid var(--gold);">
             <div>
-                <h1>📱 Mesero</h1>
-                <small id="db-status" style="font-size: 10px; color: orange;">⏳ Conectando...</small>
+                <h1>📱 <span>PANEL MESERO</span></h1>
+                <p style="margin:0; font-size: 10px; color: var(--text-muted); text-transform: uppercase;">
+                    Usuario: <span id="userName" style="color: var(--gold);">-</span>
+                </p>
+                <div id="db-status" style="font-size: 9px; font-weight: 700; color: #666; margin-top: 2px;">⌛
+                    Conectando...</div>
             </div>
         </div>
-        <a href="index.html" class="btn-secondary"
-            style="padding: 10px; text-decoration: none; text-align: center;">Salir</a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="switchTab('menu')" class="btn-secondary active" id="tabMenu"
+                style="padding: 8px 15px; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); font-size: 11px; font-weight: 800; color: var(--gold);">
+                MENU
+            </button>
+            <button onclick="switchTab('cart')" class="btn-secondary" id="tabCart"
+                style="padding: 8px 12px; border-radius: 10px; position: relative; background: rgba(212, 175, 55, 0.1); border-color: rgba(212, 175, 55, 0.3);">
+                🛒 <span id="cartCountHeader" style="font-weight: 800; color: var(--gold);">0</span>
+            </button>
+            <button onclick="window.location.href='index.html'" class="btn-exit"
+                style="background: rgba(239,68,68,0.1); color: var(--accent); padding: 8px 15px; border-radius: 10px; border: 1px solid rgba(239,68,68,0.2); font-size: 11px; font-weight: 800;">
+                SALIR
+            </button>
+        </div>
     </header>
 
-    <!-- VISTA: MESAS -->
-    <div id="tablesView" style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
-        <div class="grid-mesas" id="gridMesas">
-            <!-- JS generates tables here -->
-            <div style="text-align: center; padding: 50px; color: #999;">Cargando mesas... 🦐</div>
+
+    <div class="mesero-container" id="menuView" style="flex-direction: column;">
+        <div class="product-area" style="width: 100%; border: none; padding: 10px;">
+            <div id="productAccordion"></div>
         </div>
     </div>
 
-    <!-- UPDATE BUTTON (Universal) -->
-    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
-        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
-        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
-        <div
-            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
-            Actualizar</div>
-    </div>
-
-    <style>
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-    </style>
-
-    <!-- VISTA: PEDIDO (Replaces Modal) -->
-    <div id="orderView" style="display: none; flex: 1; overflow-y: auto; padding-bottom: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 id="orderTitle" style="margin:0; color: var(--primary);">Mesa X</h2>
-            <button class="btn-secondary" onclick="closeOrderView()">🔙 Volver</button>
-        </div>
-
-        <div class="product-grid" id="productGrid">
-            <!-- JS generates products here -->
-        </div>
-
-        <div class="order-summary">
-            <h3>Resumen:</h3>
-            <div id="orderList">
-                <p style="text-align:center; color:#999;">Nada agregado aún</p>
+    <div class="mesero-container" id="cartView" style="display: none; justify-content: center; padding: 20px;">
+        <div class="order-panel glass" style="max-width: 500px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0; color: var(--gold); font-size: 14px;">PEDIDO ACTUAL</h3>
+                <div id="selectedMesaBadge" class="mesa-badge"
+                    style="background: var(--gold); color: #000; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 12px;">
+                    -</div>
             </div>
-            <h3 style="text-align: right; margin-top: 10px;">Total: <span id="modalTotal">S/ 0.00</span></h3>
+            <div class="order-list" id="orderItems"></div>
+            <div class="order-footer">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <span style="color: var(--text-muted); font-size: 14px;">Total Estimado</span>
+                    <span id="orderTotal" style="font-size: 24px; font-weight: 800; color: var(--gold);">S/ 0.00</span>
+                </div>
+                <button class="btn-primary" id="btnSendOrder" onclick="sendOrder()" disabled
+                    style="width:100%; height: 50px;">
+                    🚀 ENVIAR A COCINA
+                </button>
+            </div>
         </div>
+    </div>
 
-        <div class="order-actions">
-            <button class="btn-secondary" onclick="closeOrderView()">Cancelar</button>
-            <button class="btn-primary" onclick="confirmOrder()">✅ ENVIAR PEDIDO</button>
+    <!-- MESA SELECTOR MODAL - Solid Background -->
+    <div id="mesaModal" class="modal"
+        style="display: flex; top: 70px; height: calc(100vh - 70px); align-items: flex-start; padding-top: 20px; background: #05192D; backdrop-filter: none; z-index: 1000;">
+        <div class="action-panel"
+            style="max-width: 1200px; width: 98%; height: auto; padding: 20px; border-radius: 20px; background: #0a213d; border: 1px solid rgba(212,175,55,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h2
+                style="color: var(--gold); text-align: center; margin-bottom: 20px; font-size: 16px; letter-spacing: 2px;">
+                SELECCIONE MESA</h2>
+            <div class="grid-mesas-waiter" id="mesaGrid"></div>
+        </div>
+    </div>
+
+    <!-- OPTIONS MODAL -->
+    <div id="optionsModal" class="modal" style="display: none;">
+        <div class="action-panel"
+            style="max-width: 400px; width: 90%; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <h2 id="optionsTitle" style="color: #0A2E52; text-align: center; margin-bottom: 5px; font-weight: 800;">DÚO
+                PARRILLERO</h2>
+            <p id="optionsSub"
+                style="text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; font-weight: 600;">Elige
+                las opciones</p>
+            <div id="optionsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;"></div>
+            <button id="btnConfirmOptions" class="btn-primary" style="width: 100%; height: 50px; font-weight: 800;"
+                onclick="confirmProductOptions()" disabled>CONFIRMAR SELECCIÓN</button>
+            <button class="btn-secondary" style="width: 100%; margin-top: 10px; color: #444; border-color: #ccc;"
+                onclick="closeOptionsModal()">CANCELAR</button>
+        </div>
+    </div>
+
+    <!-- COMMENT MODAL -->
+    <div id="commentModal" class="modal" style="display: none;">
+        <div class="action-panel"
+            style="max-width: 400px; width: 90%; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <h3 style="color: #0A2E52; margin-top: 0; font-weight: 800; text-align: center;">NOTA PARA COCINA</h3>
+            <textarea id="commentText"
+                style="width: 100%; height: 120px; padding: 15px; margin-bottom: 20px; color: #000; background: #f8f9fa; border: 2px solid #ddd; border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 600;"
+                placeholder="Ej: Para llevar, sin cebolla..."></textarea>
+            <button class="btn-primary" style="width: 100%; height: 50px; font-weight: 800;"
+                onclick="saveComment()">GUARDAR NOTA</button>
+            <button class="btn-secondary" style="width: 100%; margin-top: 10px; color: #444; border-color: #ccc;"
+                onclick="closeCommentModal()">CANCELAR</button>
         </div>
     </div>
 
     <script type="module">
-        import './script.js?v=force';
+        import './script.js?v=v12';
+        window.onload = () => {
+            const user = localStorage.getItem('currentUser') || 'Mesero';
+            document.getElementById('userName').innerText = user;
+            setTimeout(() => {
+                if (typeof window.initDB === 'function') window.initDB();
+                if (typeof renderProducts === 'function') renderProducts();
+                if (typeof renderMesas === 'function') renderMesas();
+            }, 500);
+        };
     </script>
+
     <script>
-        const grid = document.getElementById('gridMesas');
-        const tablesView = document.getElementById('tablesView');
-        const orderView = document.getElementById('orderView');
-
+        let currentCategory = 'CEVICHES';
         let currentMesaId = null;
-        let currentOrderItems = [];
+        let basket = [];
 
-        function renderTables() {
+        let pendingProduct = null;
+        let selectedOptions = [];
+        let commentItemIndex = null;
+
+        function renderMesas() {
+            if (typeof getDB !== 'function') return;
             const db = getDB();
-            if (!db || Object.keys(db).length === 0) {
-                // Not ready, wait for event
-                return;
-            }
+            const grid = document.getElementById('mesaGrid');
             grid.innerHTML = '';
-            for (let i = 1; i <= 20; i++) {
-                const key = `mesa_${i}`;
-                const mesa = db[key];
-                if (!mesa) continue;
-
-                const card = document.createElement('div');
-                card.className = `card-mesa ${mesa.status}`;
-                card.innerHTML = `
-                    <div style="font-size: 30px;">🍽️</div>
-                    MESA ${i}
-                    <div style="font-size: 14px; margin-top: 5px;">${mesa.status === 'free' ? 'Libre' : formatMoney(mesa.total)}</div>
-                `;
-                card.onclick = () => openTable(i);
-                grid.appendChild(card);
-            }
-        }
-
-        function openTable(id) {
-            try {
-                currentMesaId = id;
-                const db = getDB();
-                if (!db) throw new Error("DB no lista");
-
-                const mesa = db[`mesa_${id}`];
-                if (!mesa) throw new Error("Mesa no encontrada en DB");
-
-                // Load existing items if any
-                currentOrderItems = mesa.items ? [...mesa.items] : [];
-
-                document.getElementById('orderTitle').innerText = `Pedido Mesa ${id}`;
-                renderProductGrid();
-                renderOrderSummary();
-
-                // SWITCH VIEW
-                const tView = document.getElementById('tablesView');
-                const oView = document.getElementById('orderView');
-
-                if (tView && oView) {
-                    tView.style.display = 'none';
-                    oView.style.display = 'block';
-                    window.scrollTo(0, 0);
-                } else {
-                    throw new Error("Elementos de vista no encontrados");
-                }
-
-            } catch (e) {
-                alert("Error: " + e.message);
-                console.error(e);
-            }
-        }
-
-        function renderProductGrid() {
-            try {
-                const container = document.getElementById('productGrid');
-
-                // Retry if MENU not ready
-                if (!window.MENU) {
-                    container.innerHTML = "<p>Cargando menú... 🍤</p>";
-                    console.log("MENU not ready, retrying in 500ms...");
-                    setTimeout(renderProductGrid, 500);
-                    return;
-                }
-
-                const categories = [...new Set(window.MENU.map(p => p.category))];
-
-                container.innerHTML = categories.map((cat, index) => {
-                    const items = window.MENU.filter(p => p.category === cat);
-                    return `
-                        <div class="category-block">
-                            <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
-                                ${cat}
-                            </div>
-                            <div id="cat_${index}" class="items-container">
-                                ${items.map(p => `
-                                    <div class="product-btn" id="btn_${p.id}" onclick="addToOrder(${p.id}, this)">
-                                        <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px;">
-                                            <h4 style="margin:0;">${p.name}</h4>
-                                            <span class="qty-badge" style="display:none">0</span>
-                                        </div>
-                                        <span>${formatMoney(p.price)}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) {
-                console.error("Error renderProductGrid", e);
-                // Don't show alert loop
-                document.getElementById('productGrid').innerHTML = "Error al mostrar productos: " + e.message;
-            }
-        }
-
-        function toggleCategory(id, headerElement) {
-            // Close others
-            document.querySelectorAll('.items-container').forEach(el => {
-                if (el.id !== id) el.classList.remove('active');
-            });
-            document.querySelectorAll('.category-header').forEach(el => {
-                if (el !== headerElement) el.classList.remove('active');
-            });
-
-            // Toggle current
-            const target = document.getElementById(id);
-            if (target) {
-                target.classList.toggle('active');
-                headerElement.classList.toggle('active');
-            }
-        }
-
-        function addToOrder(productId, btnElement) {
-            const product = MENU.find(p => p.id === productId);
-
-            // UI Feedback: Flash Green
-            if (btnElement) {
-                btnElement.classList.add('pressed');
-                setTimeout(() => btnElement.classList.remove('pressed'), 300);
-            }
-
-            // Add Logic
-            const itemToAdd = {
-                ...product,
-                printed: false,
-                addedAt: Date.now()
-            };
-            currentOrderItems.push(itemToAdd);
-
-            // UI Feedback: Update Counter
-            if (btnElement) {
-                const badge = btnElement.querySelector('.qty-badge');
-                if (badge) {
-                    const count = currentOrderItems.filter(i => i.id === productId).length;
-                    badge.innerText = count;
-                    badge.classList.add('show');
-                    // Remove inline display if any
-                    badge.style.display = '';
-                }
-            }
-
-            renderOrderSummary();
-        }
-
-        function removeFromOrder(index) {
-            const itemToRemove = currentOrderItems[index];
-            if (!itemToRemove) return;
-
-            // Remove from array
-            currentOrderItems.splice(index, 1);
-
-            // Update Summary
-            renderOrderSummary();
-
-            // Update Badge Logic
-            const productId = itemToRemove.id;
-            const btn = document.getElementById(`btn_${productId}`);
-            if (btn) {
-                const badge = btn.querySelector('.qty-badge');
-                if (badge) {
-                    const count = currentOrderItems.filter(i => i.id === productId).length;
-                    if (count > 0) {
-                        badge.innerText = count;
-                        badge.classList.add('show');
-                        badge.style.display = '';
-                    } else {
-                        badge.classList.remove('show');
-                        badge.style.display = 'none';
-                    }
-                }
-            }
-        }
-
-        function renderOrderSummary() {
-            const list = document.getElementById('orderList');
-            const totalEl = document.getElementById('modalTotal');
-
-            if (currentOrderItems.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:#999;">Nada agregado aún</p>';
-                totalEl.innerText = formatMoney(0);
-                return;
-            }
-
-            let total = 0;
-            list.innerHTML = currentOrderItems.map((item, index) => {
-                total += item.price;
-                return `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:5px;">
-                    <div style="display:flex; align-items:center;">
-                        <button onclick="removeFromOrder(${index})" style="background:transparent; border:none; color:red; font-weight:bold; cursor:pointer; margin-right:8px; font-size:16px;">❌</button>
-                        <span>${item.name}</span>
+            for (let i = 1; i <= 28; i++) {
+                const mesaData = db[`mesa_${i}`];
+                if (!mesaData) continue; // In case DB is not fully updated yet
+                const btn = document.createElement('div');
+                btn.className = `card-mesa ${mesaData.status}`;
+                btn.style.padding = '15px 5px';
+                btn.innerHTML = `
+                    <div class="plate-icon" style="margin: 0 auto; background: ${mesaData.status === 'free' ? 'rgba(16, 185, 129, 0.1)' : '#DC2626'}; border-color: ${mesaData.status === 'free' ? 'var(--success)' : '#B91C1C'};">
+                        <div style="font-size: 20px; color: ${mesaData.status === 'free' ? 'var(--success)' : 'white'};">${i}</div>
                     </div>
-                    <span>${formatMoney(item.price)}</span>
-                </div>`;
+                    ${mesaData.status === 'occupied' ? '<div style="font-size: 8px; margin-top: 5px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px; color: white;">OCUPADA</div>' : ''}
+                `;
+                btn.onclick = () => selectMesa(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        // Expose to window for global updates from script.js
+        window.renderMesas = renderMesas;
+
+        function selectMesa(id) {
+            currentMesaId = id;
+            document.getElementById('selectedMesaBadge').innerText = `MESA ${id}`;
+            document.getElementById('mesaModal').style.display = 'none';
+        }
+
+        function switchTab(tab) {
+            const menuView = document.getElementById('menuView');
+            const cartView = document.getElementById('cartView');
+            const tabMenu = document.getElementById('tabMenu');
+            const tabCart = document.getElementById('tabCart');
+
+            if (menuView) menuView.style.display = (tab === 'menu' ? 'flex' : 'none');
+            if (cartView) cartView.style.display = (tab === 'cart' ? 'flex' : 'none');
+
+            if (tabMenu) tabMenu.classList.toggle('active', tab === 'menu');
+            if (tabCart) tabCart.classList.toggle('active', tab === 'cart');
+
+            if (tab === 'cart') updateBasketUI();
+        }
+
+        function filterCat(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(cat)));
+            renderProducts();
+        }
+
+        function toggleCategory(catId) {
+            const safeId = catId.replace(/\s+/g, '-');
+            const el = document.getElementById('cat-content-' + safeId);
+            const header = document.getElementById('cat-header-' + safeId);
+
+            const isOpening = el.style.display === 'none';
+
+            // Haptic on category toggle
+            if ('vibrate' in navigator) navigator.vibrate(20);
+
+            // Close all others
+            document.querySelectorAll('[id^="cat-content-"]').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.category-header').forEach(h => {
+                h.classList.remove('active');
+            });
+
+            if (isOpening) {
+                el.style.display = 'grid';
+                header.classList.add('active');
+            }
+        }
+
+        function renderProducts() {
+            const all = window.MENU || [];
+            if (all.length === 0) return;
+
+            const accordion = document.getElementById('productAccordion');
+
+            // Group by category
+            const groups = {};
+            all.forEach(p => {
+                const cat = p.category || 'VARIOS';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(p);
+            });
+
+            accordion.innerHTML = Object.keys(groups).map(cat => {
+                const safeId = cat.replace(/\s+/g, '-');
+                return `
+                    <div class="category-header glass" id="cat-header-${safeId}" onclick="toggleCategory('${cat}')" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.2); margin-bottom: 12px;">
+                        <span style="color: var(--gold); font-weight: 800; letter-spacing: 1px;">${cat.toUpperCase()}</span>
+                        <span class="chevron" style="color: var(--gold); font-size: 18px;">▾</span>
+                    </div>
+                    <div id="cat-content-${safeId}" class="product-grid" style="display: none; margin-bottom: 20px; grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 5px;">
+                        ${groups[cat].map(p => `
+                            <button class="product-btn" onclick="handleProductClick(${JSON.stringify(p).replace(/"/g, '&quot;')}, this)" style="height: auto; min-height: 90px; display: flex; flex-direction: column; justify-content: center; background: #1a2a44; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; pointer-events: none;">
+                                    <span style="font-size: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));">${p.icon || '🍛'}</span>
+                                    <span style="font-weight: 800; color: #FFD700; border: 1px solid #FFD700; padding: 2px 8px; border-radius: 6px; font-size: 12px; background: rgba(0,0,0,0.5);">${formatMoney(p.price)}</span>
+                                </div>
+                                <h4 style="color: #FFFFFF !important; font-weight: 800; margin: 0; font-size: 13px; line-height: 1.2; text-align: left; width: 100%; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); opacity: 1 !important; pointer-events: none;">${p.name.toUpperCase()}</h4>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
             }).join('');
 
-            totalEl.innerText = formatMoney(total);
+            // Auto-expand the first one
+            const firstCat = Object.keys(groups)[0];
+            if (firstCat) toggleCategory(firstCat);
         }
 
-        function closeOrderView() {
-            orderView.style.display = 'none';
-            tablesView.style.display = 'block'; // Or 'grid' if using grid directly on container, but block is fine for wrapper
-            currentOrderItems = [];
-            renderTables();
+        function handleProductClick(product, btnEl) {
+            // Visual Feedback
+            if (btnEl) {
+                btnEl.style.transform = 'scale(0.95)';
+                btnEl.style.filter = 'brightness(1.5)';
+                setTimeout(() => {
+                    btnEl.style.transform = '';
+                    btnEl.style.filter = '';
+                }, 100);
+            }
+
+            if (product.hasOptions) {
+                openOptionsModal(product);
+            } else {
+                addToBasket(product.name, product.price, null, product.category);
+            }
         }
 
-        function confirmOrder() {
-            const db = getDB();
-            const key = `mesa_${currentMesaId}`;
+        function openOptionsModal(product) {
+            pendingProduct = product;
+            selectedOptions = [];
+            document.getElementById('optionsTitle').innerText = product.name.toUpperCase();
+            document.getElementById('optionsSub').innerText = `Elige ${product.maxChoices} opciones`;
 
-            db[key].items = currentOrderItems;
-            db[key].status = currentOrderItems.length > 0 ? 'occupied' : 'free';
-            db[key].total = currentOrderItems.reduce((sum, item) => sum + item.price, 0);
+            const list = document.getElementById('optionsList');
+            list.innerHTML = product.choices.map(choice => `
+                <button class="glass-input option-btn" style="text-align: left; padding: 15px; color: black; font-weight: 800; font-size: 14px; background: white; border-radius: 8px;" onclick="toggleOption(this, '${choice}')">
+                    ${choice}
+                </button>
+            `).join('');
 
-            saveDB(db);
-            closeOrderView();
+            document.getElementById('btnConfirmOptions').disabled = true;
+            document.getElementById('optionsModal').style.display = 'flex';
         }
 
-        // Init (Wait for module)
-        window.onload = function () {
+        function toggleOption(btn, choice) {
+            const idx = selectedOptions.indexOf(choice);
+            if (idx > -1) {
+                selectedOptions.splice(idx, 1);
+                btn.style.borderColor = 'var(--card-border)';
+                btn.style.background = 'transparent';
+            } else if (selectedOptions.length < pendingProduct.maxChoices) {
+                selectedOptions.push(choice);
+                btn.style.borderColor = 'var(--gold)';
+                btn.style.background = 'rgba(212, 175, 55, 0.1)';
+            }
+
+            document.getElementById('btnConfirmOptions').disabled = selectedOptions.length !== pendingProduct.maxChoices;
+        }
+
+        function confirmProductOptions() {
+            addToBasket(pendingProduct.name, pendingProduct.price, selectedOptions, pendingProduct.category);
+            closeOptionsModal();
+        }
+
+        function closeOptionsModal() {
+            document.getElementById('optionsModal').style.display = 'none';
+            pendingProduct = null;
+        }
+
+        function addToBasket(name, price, options = null, category = 'VARIOS') {
+            basket.push({ name, price, options, category, note: '' });
+            updateBasketUI();
+
+            // Haptic Feedback
+            if ('vibrate' in navigator) navigator.vibrate(50);
+
+            // Notification animation
+            const badge = document.getElementById('cartCountHeader').parentElement;
+            badge.style.transform = 'scale(1.2) rotate(5deg)';
+            badge.style.background = 'var(--gold)';
+            badge.style.color = 'black';
             setTimeout(() => {
-                if (typeof renderTables === 'function') renderTables();
-            }, 1000);
-        };
+                badge.style.transform = '';
+                badge.style.background = '';
+                badge.style.color = '';
+            }, 300);
+        }
+
+        function updateBasketUI() {
+            const count = basket.length;
+            if (document.getElementById('cartCount')) document.getElementById('cartCount').innerText = count;
+            if (document.getElementById('cartCountHeader')) document.getElementById('cartCountHeader').innerText = count;
+
+            const container = document.getElementById('orderItems');
+            if (basket.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); opacity: 0.5; margin-top: 50px;">Carrito vacío</p>';
+                document.getElementById('btnSendOrder').disabled = true;
+                document.getElementById('orderTotal').innerText = 'S/ 0.00';
+                return;
+            }
+            container.innerHTML = basket.map((item, idx) => `
+                <div class="order-list-item" style="flex-direction: column; align-items: stretch; gap: 5px; background: rgba(255,255,255,0.9); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #ddd;">
+                    <div style="display:flex; justify-content: space-between; align-items:center;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <span style="color:#0A2E52; font-weight:900;">1x</span>
+                            <span style="font-size:14px; font-weight: 800; color: #000;">${item.name.toUpperCase()}</span>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="openCommentModal(${idx})" style="background:#eee; border:1px solid #ccc; border-radius: 8px; width: 35px; height: 35px; font-size:16px;">📝</button>
+                            <button onclick="removeFromBasket(${idx})" style="background:#FFEBEB; border:1px solid #FFCDCD; border-radius: 8px; width: 35px; height: 35px; color:#D32F2F; font-size:20px; font-weight:bold;">&times;</button>
+                        </div>
+                    </div>
+                    ${item.options ? `<div style="font-size: 12px; color: #555; margin-left: 28px; font-weight: 700;">➔ ${item.options.join(' + ')}</div>` : ''}
+                    ${item.note ? `<div style="font-size: 12px; color: #10B981; margin-left: 28px; background: #E6F7F0; padding: 8px; border-radius: 8px; font-weight: 800; border: 1px solid #B5EAD7;">"${item.note}"</div>` : ''}
+                </div>
+            `).join('');
+
+            const total = basket.reduce((acc, item) => acc + item.price, 0);
+            document.getElementById('orderTotal').innerText = formatMoney(total);
+            document.getElementById('btnSendOrder').disabled = false;
+        }
+
+        function openCommentModal(idx) {
+            commentItemIndex = idx;
+            document.getElementById('commentText').value = basket[idx].note || '';
+            document.getElementById('commentModal').style.display = 'flex';
+        }
+
+        function saveComment() {
+            const note = document.getElementById('commentText').value.trim();
+            basket[commentItemIndex].note = note;
+            updateBasketUI();
+            closeCommentModal();
+        }
+
+        function closeCommentModal() {
+            document.getElementById('commentModal').style.display = 'none';
+        }
+
+        function removeFromBasket(idx) {
+            basket.splice(idx, 1);
+            updateBasketUI();
+        }
+
+        async function sendOrder() {
+            if (!currentMesaId) return alert('Seleccione una mesa primero');
+
+            const btn = document.getElementById('btnSendOrder');
+            const originalText = btn.innerText;
+
+            try {
+                btn.disabled = true;
+                btn.innerText = '⌛ ENVIANDO...';
+                btn.style.opacity = '0.5';
+
+                const db = getDB();
+                const mesa = db[`mesa_${currentMesaId}`];
+                mesa.status = 'occupied';
+                basket.forEach(item => {
+                    mesa.items.push({ ...item, printed: false });
+                    mesa.total += item.price;
+                });
+
+                // ESPERAR A QUE FIRESTORE CONFIRME
+                await saveDB(db);
+
+                if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+                alert('✅ ¡PEDIDO ENVIADO CON ÉXITO!');
+
+                // Reset State without reloading
+                basket = [];
+                currentMesaId = null;
+                updateBasketUI();
+                renderMesas();
+                switchTab('menu');
+
+                // Restore button state
+                btn.disabled = false;
+                btn.innerText = originalText;
+                btn.style.opacity = '1';
+            } catch (error) {
+                console.error("Error al enviar pedido:", error);
+                alert('❌ ERROR AL ENVIAR: Por favor intente de nuevo.');
+                btn.disabled = false;
+                btn.innerText = originalText;
+                btn.style.opacity = '1';
+            }
+        }
     </script>
 </body>
 
