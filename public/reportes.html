@@ -6,13 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEVICHERIA 21 - Reportes</title>
     <link rel="stylesheet" href="style.css?v=27.0">
-    <link rel="icon" href="logo.png">
+    <link rel="icon" href="logo_v2.png">
 </head>
 
 <body class="glass">
+    <script>
+        if (localStorage.getItem('auth_master') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
+    <script>
+        // MASTER KEY SECURITY CHECK
+        if (localStorage.getItem('auth_master') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="logo.png" style="height: 50px; border-radius: 12px; border: 1px solid var(--gold);">
+            <img src="logo_v2.png" style="height: 50px; border-radius: 12px; border: 1px solid var(--gold);">
             <div>
                 <h1>📊 <span>BALANCE Y REPORTES</span></h1>
                 <p style="margin: 0; color: var(--text-muted); font-size: 11px; letter-spacing: 1px;">ANÁLISIS DE
@@ -25,10 +36,9 @@
     </header>
 
     <div class="reports-main-layout"
-        style="display: grid; grid-template-columns: 300px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px);">
+        style="display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; min-height: calc(100vh - 80px);">
         <!-- LEFT: Calendar sidebar -->
-        <div class="reports-sidebar glass"
-            style="padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto;">
+        <div class="reports-sidebar glass" style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
             <div id="calendar-container">
                 <h3 style="color: var(--gold); font-size: 14px; margin-top: 0; text-align: center;">📅 CALENDARIO</h3>
                 <div id="custom-calendar-header"
@@ -77,7 +87,7 @@
         </div>
 
         <!-- RIGHT: Detailed Content -->
-        <div class="reports-content" style="display: flex; flex-direction: column; gap: 20px; overflow-y: hidden;">
+        <div class="reports-content" style="display: flex; flex-direction: column; gap: 20px;">
             <!-- TOP FILTERS -->
             <div class="glass"
                 style="padding: 15px 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
@@ -95,14 +105,14 @@
             </div>
 
             <!-- DATA AREA -->
-            <div id="reportArea" class="glass" style="flex: 1; border-radius: 24px; padding: 30px; overflow-y: auto;">
+            <div id="reportArea" class="glass" style="flex: 1; border-radius: 24px; padding: 30px;">
                 <!-- Content will be injected here -->
             </div>
         </div>
     </div>
 
     <script type="module">
-        import './script.js?v=v12';
+        import './script.js?v=v29';
         window.onload = () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
@@ -163,9 +173,9 @@
                 btn.innerText = d;
                 btn.style.cssText = `
                     padding: 8px; font-size: 11px; cursor: pointer; border-radius: 5px; font-weight: 700;
-                    background: ${isSelected ? 'var(--gold)' : (hasSales ? 'rgba(16, 185, 129, 0.15)' : 'none')};
-                    color: ${isSelected ? 'black' : (hasSales ? 'var(--success)' : 'white')};
-                    border: ${isSelected ? 'none' : '1px solid rgba(255,255,255,0.05)'};
+                    background: ${isSelected ? '#3b82f6' : (hasSales ? 'rgba(59, 130, 246, 0.15)' : 'none')};
+                    color: ${isSelected ? 'white' : (hasSales ? '#2563eb' : '#0284c7')};
+                    border: ${isSelected ? 'none' : '1px solid rgba(2,132,199,0.1)'};
                 `;
                 btn.onclick = () => {
                     selectedDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
@@ -194,51 +204,106 @@
 
             const area = document.getElementById('reportArea');
             const targetDateStr = selectedDate.toDateString();
+            const isToday = targetDateStr === new Date().toDateString();
             const dailySales = history.filter(h => new Date(h.timestamp).toDateString() === targetDateStr);
 
             const total = dailySales.reduce((sum, s) => sum + s.total, 0);
             document.getElementById('totalRevenue').innerText = `S/ ${total.toFixed(2)}`;
 
-            if (dailySales.length === 0) {
-                area.innerHTML = `<div style="text-align:center; padding: 100px; opacity: 0.5;"><h3>SIN VENTAS</h3><p>No hay registros para este día</p></div>`;
-                return;
+            let html = ``;
+
+            if (dailySales.length > 0) {
+                // Group by hour
+                const hourly = {};
+                dailySales.forEach(sale => {
+                    const hour = new Date(sale.timestamp).getHours();
+                    if (!hourly[hour]) hourly[hour] = { total: 0, items: {} };
+                    hourly[hour].total += sale.total;
+                    sale.items.forEach(item => {
+                        hourly[hour].items[item.name] = (hourly[hour].items[item.name] || 0) + 1;
+                    });
+                });
+
+                html += `<h2 style="color: var(--gold); margin-top: 0; font-size: 18px;">📊 DETALLE DE VENTAS (COBRADAS)</h2>`;
+
+                // Sort hours descending
+                const sortedHours = Object.keys(hourly).sort((a, b) => b - a);
+
+                sortedHours.forEach(h => {
+                    const hourStr = `${h.padStart(2, '0')}:00 - ${(parseInt(h) + 1).toString().padStart(2, '0')}:00`;
+                    html += `
+                        <div style="background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; overflow: hidden;">
+                            <div style="background: rgba(212, 175, 55, 0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items:center;">
+                                <span style="font-weight: 800; color: var(--gold); font-size: 13px;">🕒 ${hourStr}</span>
+                                <span style="font-weight: 900; color: white;">S/ ${hourly[h].total.toFixed(2)}</span>
+                            </div>
+                            <div style="padding: 15px 20px;">
+                                ${Object.entries(hourly[h].items).map(([name, count]) => `
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                        <span style="color: var(--text-muted); font-weight: 600;">${name.toUpperCase()}</span>
+                                        <span style="color: white; font-weight: 800;">x${count}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
             }
 
-            // Group by hour
-            const hourly = {};
-            dailySales.forEach(sale => {
-                const hour = new Date(sale.timestamp).getHours();
-                if (!hourly[hour]) hourly[hour] = { total: 0, items: {} };
-                hourly[hour].total += sale.total;
-                sale.items.forEach(item => {
-                    hourly[hour].items[item.name] = (hourly[hour].items[item.name] || 0) + 1;
-                });
-            });
+            if (isToday) {
+                const db = window.getDB();
+                const activeTables = [];
+                if (db) {
+                    for (let i = 1; i <= 28; i++) {
+                        const mesa = db[`mesa_${i}`];
+                        if (mesa && mesa.status === 'occupied' && mesa.items && mesa.items.length > 0) {
+                            activeTables.push(mesa);
+                        }
+                    }
+                }
 
-            let html = `<h2 style="color: var(--gold); margin-top: 0; font-size: 18px;">📊 DETALLE DE VENTAS</h2>`;
+                if (activeTables.length > 0) {
+                    html += `<h2 style="color: #4ade80; margin-top: 30px; font-size: 18px;">🔥 CONSUMO EN CURSO (MESAS ACTIVAS)</h2>`;
+                    let activeTotal = 0;
+                    activeTables.forEach(mesa => {
+                        let mesaTotalCalculated = 0;
+                        const itemCounts = {};
+                        mesa.items.forEach(item => {
+                            itemCounts[item.name] = (itemCounts[item.name] || 0) + 1;
+                            mesaTotalCalculated += item.price;
+                        });
+                        const displayTotal = mesa.total > 0 ? mesa.total : mesaTotalCalculated;
 
-            // Sort hours descending
-            const sortedHours = Object.keys(hourly).sort((a, b) => b - a);
-
-            sortedHours.forEach(h => {
-                const hourStr = `${h.padStart(2, '0')}:00 - ${(parseInt(h) + 1).toString().padStart(2, '0')}:00`;
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; overflow: hidden;">
-                        <div style="background: rgba(212, 175, 55, 0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items:center;">
-                            <span style="font-weight: 800; color: var(--gold); font-size: 13px;">🕒 ${hourStr}</span>
-                            <span style="font-weight: 900; color: white;">S/ ${hourly[h].total.toFixed(2)}</span>
-                        </div>
-                        <div style="padding: 15px 20px;">
-                            ${Object.entries(hourly[h].items).map(([name, count]) => `
+                        html += `
+                        <div style="background: rgba(16, 185, 129, 0.05); border-radius: 15px; border: 1px solid rgba(16, 185, 129, 0.3); margin-bottom: 15px; overflow: hidden;">
+                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px 20px; display: flex; justify-content: space-between; align-items:center;">
+                                <span style="font-weight: 800; color: #4ade80; font-size: 13px;">MESA ${mesa.id}</span>
+                                <span style="font-weight: 900; color: white;">S/ ${displayTotal.toFixed(2)}</span>
+                            </div>
+                            <div style="padding: 15px 20px;">
+                        `;
+                        Object.entries(itemCounts).forEach(([name, count]) => {
+                            html += `
                                 <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
                                     <span style="color: var(--text-muted); font-weight: 600;">${name.toUpperCase()}</span>
                                     <span style="color: white; font-weight: 800;">x${count}</span>
                                 </div>
-                            `).join('')}
+                            `;
+                        });
+                        html += `</div></div>`;
+                        activeTotal += displayTotal;
+                    });
+                    html += `
+                        <div style="text-align: right; padding: 15px 0; color: #4ade80; font-weight: 900; font-size: 18px;">
+                            TOTAL EN SALA: S/ ${activeTotal.toFixed(2)}
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                } else if (dailySales.length === 0) {
+                    html = `<div style="text-align:center; padding: 100px; opacity: 0.5;"><h3>SIN VENTAS NI MESAS ACTIVAS</h3><p>No hay consumo en curso ni cerrado para hoy</p></div>`;
+                }
+            } else if (dailySales.length === 0) {
+                html = `<div style="text-align:center; padding: 100px; opacity: 0.5;"><h3>SIN VENTAS</h3><p>No hay registros cerrados para este día</p></div>`;
+            }
 
             area.innerHTML = html;
         }

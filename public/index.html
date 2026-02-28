@@ -117,10 +117,14 @@
 </head>
 
 <body>
+    <script>
+        // MASTER KEY AUTH CHECK (runs immediately)
+        // No redirect here since index.html is the auth page
+    </script>
 
     <div class="landing-container">
         <div class="landing-content">
-            <img src="logo.png" class="floating-logo" alt="Logo">
+            <img src="logo_v2.png" class="floating-logo" alt="Logo">
 
             <h1
                 style="color: white; font-size: clamp(2rem, 8vw, 3.5rem); margin-bottom: 10px; text-shadow: 0 10px 20px rgba(0,0,0,0.5);">
@@ -129,7 +133,7 @@
                 style="color: var(--text-muted); font-size: 1rem; margin-bottom: 40px; letter-spacing: 2px; text-transform: uppercase;">
                 Experiencia Gastronómica</p>
 
-            <div class="menu-grid">
+            <div class="menu-grid" id="mainMenuGrid" style="display: none; transition: opacity 0.5s;">
                 <button class="role-btn" onclick="requestPIN('mesero')">
                     <div class="icon">📱</div>
                     <span>MESERO</span>
@@ -173,15 +177,14 @@
 
     <!-- PIN PAD MODAL -->
     <div id="pinModal" class="pin-modal" style="display: none;">
-        <h2 style="color: var(--gold); margin-bottom: 10px; font-weight: 800; letter-spacing: 2px;">ACCESO RESTRINGIDO
+        <h2 style="color: var(--gold); margin-bottom: 10px; font-weight: 800; letter-spacing: 2px;" id="pinModalTitle">
+            ACCESO RESTRINGIDO
         </h2>
         <p id="pinMsg" style="color: white; margin-bottom: 30px; opacity: 0.7;">Ingrese su código de seguridad</p>
 
         <div class="pin-display">
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
+            <!-- Dynamic dots depending on required length -->
+            <div id="pinDotsContainer" style="display:flex; gap:20px;"></div>
         </div>
 
         <div class="pin-pad">
@@ -202,7 +205,9 @@
         </div>
     </div>
 
-    <script type="module" src="script.js?v=v12"></script>
+    <script type="module">
+        import './script.js?v=v29';
+    </script>
     <script>
         // PWA INSTALL LOGIC
         let deferredPrompt;
@@ -225,16 +230,64 @@
             });
         }
 
-        // PIN PAD LOGIC
+        // SECURITY: Logo Tap Master Key
+        let logoTaps = 0;
+        let logoTapTimer;
+        const logoImg = document.querySelector('.floating-logo');
+        const menuGrid = document.getElementById('mainMenuGrid');
+
+        // Check if device is already authorized
+        if (localStorage.getItem('auth_master') === 'true') {
+            menuGrid.style.display = 'grid'; // Grid is used in style.css for menu-grid
+        }
+
+        logoImg.addEventListener('click', () => {
+            // If already authorized, ignore
+            if (localStorage.getItem('auth_master') === 'true') return;
+
+            logoTaps++;
+            clearTimeout(logoTapTimer);
+
+            if (logoTaps >= 5) {
+                logoTaps = 0;
+                requestPIN('master');
+            } else {
+                logoTapTimer = setTimeout(() => {
+                    logoTaps = 0; // reset if they pause too long
+                }, 1000);
+            }
+        });
+
+        // REUSABLE PIN PAD LOGIC
         let currentPin = "";
         let targetRole = "";
+        let requiredLength = 4;
         const pinModal = document.getElementById('pinModal');
-        const pinDots = document.querySelectorAll('.pin-dot');
+        const pinDotsContainer = document.getElementById('pinDotsContainer');
         const pinMsg = document.getElementById('pinMsg');
+
+        function generateDots(length) {
+            pinDotsContainer.innerHTML = '';
+            for (let i = 0; i < length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'pin-dot';
+                pinDotsContainer.appendChild(dot);
+            }
+        }
 
         function requestPIN(role) {
             targetRole = role;
             currentPin = "";
+
+            if (role === 'master') {
+                requiredLength = 10;
+                document.getElementById('pinModalTitle').innerText = 'CLAVE MAESTRA';
+            } else {
+                requiredLength = 4;
+                document.getElementById('pinModalTitle').innerText = 'ACCESO RESTRINGIDO';
+            }
+
+            generateDots(requiredLength);
             updatePinDisplay();
             pinMsg.textContent = 'Ingrese su código de seguridad';
             pinModal.style.display = 'flex';
@@ -247,10 +300,10 @@
         }
 
         function pressPin(num) {
-            if (currentPin.length < 4) {
+            if (currentPin.length < requiredLength) {
                 currentPin += num;
                 updatePinDisplay();
-                if (currentPin.length === 4) {
+                if (currentPin.length === requiredLength) {
                     setTimeout(validatePin, 300);
                 }
             }
@@ -262,7 +315,8 @@
         }
 
         function updatePinDisplay() {
-            pinDots.forEach((dot, index) => {
+            const dots = pinDotsContainer.querySelectorAll('.pin-dot');
+            dots.forEach((dot, index) => {
                 if (index < currentPin.length) {
                     dot.classList.add('filled');
                 } else {
@@ -273,7 +327,14 @@
 
         function validatePin() {
             let valid = false;
-            if (targetRole === 'caja' && currentPin === '2121') valid = true;
+            if (targetRole === 'master' && currentPin === '4291441721') {
+                localStorage.setItem('auth_master', 'true');
+                closePin();
+                menuGrid.style.display = 'grid'; // Grid is used in style.css for menu-grid
+                menuGrid.style.opacity = '1';
+                return; // Stop here, don't redirect
+            }
+            else if (targetRole === 'caja' && currentPin === '2121') valid = true;
             else if (targetRole === 'reportes' && currentPin === '2027') valid = true;
             else if (targetRole === 'mesero') {
                 if (currentPin === '9999') { localStorage.setItem('currentUser', 'Mesero 1'); valid = true; }
@@ -297,7 +358,7 @@
             if (e.key >= '0' && e.key <= '9') {
                 pressPin(e.key);
             } else if (e.key === 'Enter') {
-                if (currentPin.length === 4) validatePin();
+                if (currentPin.length === requiredLength) validatePin();
             } else if (e.key === 'Backspace' || e.key === 'Delete') {
                 clearPin();
             } else if (e.key === 'Escape') {

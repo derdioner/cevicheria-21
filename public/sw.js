@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cevi21-v12';
+const CACHE_NAME = 'cevi21-v29';
 const ASSETS = [
     './',
     './index.html',

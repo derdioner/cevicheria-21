@@ -6,13 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEVICHERIA 21 - Mesero</title>
     <link rel="stylesheet" href="style.css?v=27.6">
-    <link rel="icon" href="logo.png">
+    <link rel="icon" href="logo_v2.png">
 </head>
 
 <body class="glass">
+    <script>
+        if (localStorage.getItem('auth_master') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
+    <script>
+        // MASTER KEY SECURITY CHECK
+        if (localStorage.getItem('auth_master') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
     <header style="height: 70px;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="logo.png" style="height: 45px; border-radius: 10px; border: 1px solid var(--gold);">
+            <img src="logo_v2.png"
+                style="height: 45px; border-radius: 10px; border: 1px solid var(--gold); mix-blend-mode: multiply;">
             <div>
                 <h1>📱 <span>PANEL MESERO</span></h1>
                 <p style="margin:0; font-size: 10px; color: var(--text-muted); text-transform: uppercase;">
@@ -112,7 +124,7 @@
     </div>
 
     <script type="module">
-        import './script.js?v=v12';
+        import './script.js?v=v29';
         window.onload = () => {
             const user = localStorage.getItem('currentUser') || 'Mesero';
             document.getElementById('userName').innerText = user;

@@ -4,54 +4,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEVICHERIA 21 - Caja</title>
-    <link rel="stylesheet" href="style.css?v=27.6">
-    <link rel="icon" href="logo.png">
-    <link rel="icon" href="logo.png">
+    <link rel="icon" href="logo_v2.png">
+    <style>
+        :root {
+            --bg-dark: #05192D;
+            --card-dark: rgba(255, 255, 255, 0.05);
+            --gold: #D4AF37;
+            --accent: #FF4D4D;
+        }
+
+        .mesa-card {
+            background: rgba(15, 52, 96, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 24px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: white !important;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mesa-card::before {
+            content: '🍽️';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 14px;
+            opacity: 0.4;
+        }
+
+        .mesa-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--gold) !important;
+            box-shadow: 0 10px 30px rgba(0, 40, 100, 0.5);
+            background: rgba(15, 52, 96, 0.8) !important;
+        }
+
+        .plate-design {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mesa-card.occupied {
+            background: linear-gradient(135deg, #1e3a8a, #0c4a6e) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .mesa-card.occupied .plate-design {
+            border-color: var(--accent);
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .mesa-card.free .plate-design {
+            border-color: var(--gold);
+        }
+
+        .grid-mesas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        header {
+            background: rgba(10, 46, 82, 0.95) !important;
+            backdrop-filter: blur(25px);
+            padding: 10px 40px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-bottom: 2px solid var(--gold) !important;
+            height: 100px !important;
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-center-stats {
+            background: rgba(15, 52, 96, 0.4);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 8px 30px;
+            display: flex;
+            gap: 40px;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(10px);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s ease;
+        }
+
+        .header-center-stats:hover {
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.4);
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .header-stat-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #f97316;
+            /* Vibrant Orange */
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .header-stat-value {
+            font-size: 24px;
+            font-weight: 950;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-exit-premium {
+            background: linear-gradient(135deg, #EF4444, #991B1B) !important;
+            color: white !important;
+            padding: 12px 28px !important;
+            border-radius: 15px !important;
+            text-decoration: none !important;
+            font-weight: 900 !important;
+            font-size: 13px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-exit-premium:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5) !important;
+            filter: brightness(1.1);
+        }
+
+        .tables-column {
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+        }
+    </style>
 </head>
 
 <body class="glass">
+    <script>
+        if (localStorage.getItem('auth_master') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="logo.png" style="height: 50px; border-radius: 12px; border: 1px solid var(--gold);">
+            <div style="position: relative;">
+                <img src="logo_v2.png"
+                    style="height: 70px; border-radius: 15px; border: 2px solid var(--gold); background: white; padding: 2px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            </div>
             <div>
-                <h1>💻 <span>CAJA / CONTROL</span></h1>
-                <p style="margin: 0; color: var(--text-muted); font-size: 12px; letter-spacing: 1px;">
-                    SISTEMA DE GESTIÓN • <span id="db-status" style="color: var(--gold);">⏳
-                        SINCRONIZANDO...</span>
-                </p>
+                <h1 style="margin: 0; font-size: 22px; font-weight: 950; letter-spacing: -0.5px;">💻 <span
+                        style="background: linear-gradient(135deg, #FFF, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CAJA
+                        / CONTROL</span></h1>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                    <span id="db-status-dot"
+                        style="width: 8px; height: 8px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 10px #4ade80;"></span>
+                    <p id="db-status"
+                        style="margin: 0; color: var(--gold); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                        SYNC: ONLINE</p>
+                </div>
             </div>
         </div>
 
-        <div class="dashboard-stats">
-            <div class="stat-card">
-                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Mesas Activas</span>
-                <div class="value" id="statOccupied">- / 20</div>
+        <div class="header-center-stats">
+            <div class="header-stat-item">
+                <span class="header-stat-label">Mesas Activas</span>
+                <div class="header-stat-value" id="statOccupied">0 / 28</div>
             </div>
-            <div class="stat-card">
-                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Ventas Hoy</span>
-                <div class="value" id="statSales">S/ 0.00</div>
+            <div
+                style="width: 2px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); height: 40px; align-self: center; opacity: 0.5;">
+            </div>
+            <div class="header-stat-item">
+                <span class="header-stat-label">Ventas Hoy</span>
+                <div class="header-stat-value" id="statSales" style="color: #4ade80;">S/ 0.00</div>
             </div>
         </div>
 
-        <a href="index.html" class="btn-exit"
-            style="background: rgba(239, 68, 68, 0.1); color: var(--accent); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 12px;">
-            CERRAR SESIÓN
+        <a href="index.html" class="btn-exit-premium">
+            <span style="font-size: 16px;">🚪</span> CERRAR SESIÓN
         </a>
     </header>
 
-    <div class="cashier-dashboard">
-        <!-- LEFT: Tables 1-10 -->
-        <div class="tables-column glass" style="padding: 10px;">
+    <div class="cashier-dashboard"
+        style="display: flex !important; flex-direction: row !important; gap: 15px; padding: 15px; height: calc(100vh - 100px); overflow: hidden; align-items: stretch;">
+        <!-- LEFT: Tables 1-14 -->
+        <div class="tables-column glass"
+            style="flex: 1 !important; overflow-y: auto; padding: 15px; min-width: 250px; display: flex; flex-direction: column;">
             <h3
-                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align: center;">
-                BLOQUE 1-10</h3>
-            <div class="grid-mesas" id="tablesLeft"
-                style="grid-template-columns: 1fr 1fr !important; gap: 6px; padding: 5px;"></div>
+                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 10px; margin-bottom: 15px;">
+                BLOQUE 1-14</h3>
+            <div class="grid-mesas" id="tablesLeft" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            </div>
         </div>
 
         <!-- CENTER: Action Panel -->
-        <div class="action-panel glass" id="actionPanel">
+        <div class="action-panel glass" id="actionPanel"
+            style="flex: 2 !important; overflow-y: auto; min-width: 350px; padding: 20px; display: flex; flex-direction: column;">
             <div style="text-align:center; color: var(--text-muted); margin-top: 100px;">
                 <div style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;">🍽️ </div>
                 <p style="font-weight: 600; font-size: 18px;">PANEL DE CONTROL</p>
@@ -59,25 +246,37 @@
             </div>
         </div>
 
-        <!-- RIGHT: Tables 11-20 -->
-        <div class="tables-column glass" style="padding: 10px;">
+        <!-- RIGHT: Tables 15-28 -->
+        <div class="tables-column glass"
+            style="flex: 1 !important; overflow-y: auto; padding: 15px; min-width: 250px; display: flex; flex-direction: column;">
             <h3
-                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align: center;">
-                BLOQUE 11-20</h3>
-            <div class="grid-mesas" id="tablesRight"
-                style="grid-template-columns: 1fr 1fr !important; gap: 6px; padding: 5px;"></div>
+                style="margin-top:0; color: var(--gold); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 10px; margin-bottom: 15px;">
+                BLOQUE 15-28</h3>
+            <div class="grid-mesas" id="tablesRight" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            </div>
         </div>
+    </div>
+
+    <!-- UPDATE BUTTON (Universal) -->
+    <div title="Actualizar Sistema" onclick="forceUpdateSystem()"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; cursor: pointer; text-align: center; animation: float 3s ease-in-out infinite;">
+        <div style="font-size: 50px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🦐</div>
+        <div
+            style="font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; margin-top: -5px;">
+            Actualizar</div>
     </div>
 
 
     <!-- Preload the Yape image so it's ready for print -->
+    <img src="yape_qr_v2.png" id="qrPreload" style="display: none;">
 
     <script type="module">
         import { db as firestoreDb } from './firebase-config.js';
-        import './script.js?v=v12';
+        import './script.js?v=v23';
 
         let currentMesaId = null;
         let allMesas = {};
+        let selectedItems = new Set();
 
         // Integration with script.js motor
         window.onload = () => {
@@ -92,14 +291,24 @@
 
         function syncFromScript() {
             if (typeof window.getDB === 'function') {
-                allMesas = window.getDB();
-                renderDashboard();
-                updateStats();
-                if (currentMesaId) showMesaDetails(currentMesaId);
+                const dbData = window.getDB();
+                if (dbData && Object.keys(dbData).length > 0) {
+                    allMesas = dbData;
+                    renderDashboard();
+                    updateStats();
+                    if (currentMesaId) showMesaDetails(currentMesaId);
 
-                const statusEl = document.getElementById('db-status');
-                statusEl.style.color = 'var(--accent)';
-                statusEl.innerText = '✅ ONLINE (FIRESTORE)';
+                    const statusEl = document.getElementById('db-status');
+                    const statusDot = document.getElementById('db-status-dot');
+                    if (statusEl) {
+                        statusEl.style.color = 'var(--gold)';
+                        statusEl.innerText = 'SYNC: FIRESTORE LIVE';
+                    }
+                    if (statusDot) {
+                        statusDot.style.background = '#4ade80';
+                        statusDot.style.boxShadow = '0 0 10px #4ade80';
+                    }
+                }
             }
         }
 
@@ -110,31 +319,41 @@
 
         function updateStats() {
             let occupied = 0;
-            let totalSales = 0;
-            Object.values(allMesas).forEach(m => {
-                if (m.status === 'occupied') occupied++;
-                if (m.status === 'paid' && m.lastUpdate && new Date(m.lastUpdate).toDateString() === new Date().toDateString()) {
-                }
-            });
-            document.getElementById('statOccupied').innerText = `${occupied} / 28`;
+            if (allMesas) {
+                Object.values(allMesas).forEach(m => {
+                    if (m.status === 'occupied') occupied++;
+                });
+            }
+            const statOccupied = document.getElementById('statOccupied');
+            if (statOccupied) statOccupied.innerText = `${occupied} / 28`;
+
+            const statSales = document.getElementById('statSales');
+            if (statSales && typeof window.getDailyReport === 'function') {
+                const report = window.getDailyReport();
+                statSales.innerText = `S/ ${report.totalRevenue.toFixed(2)}`;
+            }
         }
 
         function renderDashboard() {
             const left = document.getElementById('tablesLeft');
             const right = document.getElementById('tablesRight');
+            if (!left || !right) return;
             left.innerHTML = '';
             right.innerHTML = '';
 
             for (let i = 1; i <= 28; i++) {
-                const mesa = allMesas[i] || { status: 'free' };
+                const mesaKey = `mesa_${i}`;
+                const mesa = allMesas[mesaKey] || { status: 'free', total: 0 };
                 const div = document.createElement('div');
                 div.className = `mesa-card ${mesa.status}`;
                 div.innerHTML = `
-                    <div style="font-size: 10px; opacity: 0.6;">MESA</div>
-                    <div style="font-size: 18px; font-weight: 900;">${i}</div>
-                    <div style="font-size: 10px; margin-top:5px; color: ${mesa.status === 'occupied' ? '#EF4444' : 'inherit'}">
+                    <div class="plate-design">
+                         <div style="font-size: 24px; font-weight: 950; font-family: 'Outfit', sans-serif;">${i}</div>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: ${mesa.status === 'occupied' ? '#EF4444' : 'var(--gold)'}">
                         ${mesa.status === 'occupied' ? 'S/ ' + (mesa.total || 0).toFixed(2) : 'LIBRE'}
                     </div>
+                    ${mesa.status === 'occupied' ? '<div style="position:absolute; bottom:8px; font-size:9px; opacity:0.6; font-weight:800;">EN CONSUMO</div>' : ''}
                 `;
                 div.onclick = () => showMesaDetails(i);
                 if (i <= 14) left.appendChild(div);
@@ -144,7 +363,8 @@
 
         function showMesaDetails(id) {
             currentMesaId = id;
-            const mesa = allMesas[id] || { status: 'free', items: [], total: 0 };
+            const mesaKey = `mesa_${id}`;
+            const mesa = allMesas[mesaKey] || { status: 'free', items: [], total: 0 };
             const panel = document.getElementById('actionPanel');
 
             if (mesa.status === 'free') {
@@ -158,11 +378,20 @@
                 return;
             }
 
+            // Calculation of selected total
+            let selectedTotal = 0;
+            mesa.items.forEach((item, idx) => {
+                if (selectedItems.has(idx)) selectedTotal += item.price;
+            });
+
             panel.innerHTML = `
                 <div class="mesa-detail-view">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                         <div>
                             <h2 style="margin:0; color: var(--gold);">MESA ${id}</h2>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+                                ${selectedItems.size > 0 ? `<span style="color: var(--gold); font-weight: 800;">SELECCIONADO: S/ ${selectedTotal.toFixed(2)}</span>` : 'Seleccione platos para pago parcial'}
+                            </div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 24px; font-weight: 900; color: var(--accent);">S/ ${(mesa.total || 0).toFixed(2)}</div>
@@ -170,40 +399,73 @@
                         </div>
                     </div>
 
-                    <div style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px;">
-                        ${mesa.items.map((item, idx) => `
-                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    ${(!item.printed && item.category !== 'BEBIDAS') ? `<span style="background: var(--accent); color: white; font-size: 8px; font-weight: 900; padding: 2px 4px; border-radius: 4px; animation: pulse 1s infinite;">NUEVO</span>` : ''}
-                                    <div>
-                                        <div style="font-weight: 600; font-size: 14px; color: var(--blue-light);">${item.name}</div>
-                                        ${item.comment ? `<div style="font-size: 11px; color: var(--gold);">📝 ${item.comment}</div>` : ''}
-                                    </div>
-                                </div>
-                                <div style="font-weight: 700; color: var(--gold);">S/ ${item.price.toFixed(2)}</div>
-                            </div>
-                        `).join('')}
+                    <div style="max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            ${mesa.items.map((item, idx) => `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;" onclick="window.toggleSelection(${idx})">
+                                    <td style="padding: 12px 5px; width: 30px;">
+                                        <input type="checkbox" ${selectedItems.has(idx) ? 'checked' : ''} style="accent-color: var(--gold); width: 22px; height: 22px; cursor: pointer;">
+                                    </td>
+                                    <td style="padding: 12px 5px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            ${(!item.printed && item.category !== 'BEBIDAS') ? `<span style="background: var(--accent); color: white; font-size: 8px; font-weight: 900; padding: 2px 4px; border-radius: 4px; animation: pulse 1s infinite;">NUEVO</span>` : ''}
+                                            <div>
+                                                <div style="font-weight: 700; font-size: 15px; color: #0B1B3D !important;">${item.name.toUpperCase()}</div>
+                                                ${item.options ? `<div style="font-size: 11px; color: var(--gold); font-weight: 600;">${item.options.join(' + ')}</div>` : ''}
+                                                ${item.note ? `<div style="font-size: 11px; color: #00FF88; font-weight: 800;">📝 ${item.note}</div>` : ''}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px 5px; text-align: right; font-weight: 900; color: #EF4444; font-size: 15px;">
+                                        S/ ${item.price.toFixed(2)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </table>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
-                        <button class="btn-secondary" id="btnTicket" style="font-size: 11px;">🖨️ CUENTA</button>
-                        <button class="btn-primary" id="btnCocina" style="font-size: 11px; background: #D32F2F; border-color: #B71C1C;">🍳 COCINA</button>
+                        <button class="btn-primary" id="btnCocina" style="font-size: 14px; background: #FF8E8B; border-color: #E57373; color: #fff; padding: 15px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">👨‍🍳 ENVIAR COCINA</button>
+                        ${selectedItems.size > 0 ?
+                    `<button class="btn-primary" id="btnPagarParcial" style="font-weight: 900; background: #45B649; font-size: 14px; padding: 15px;">💰 PAGAR S/ ${selectedTotal.toFixed(2)}</button>` :
+                    `<button class="btn-primary" id="btnPagar" style="font-weight: 900; font-size: 14px; padding: 15px;">💰 PAGAR</button>`
+                }
                     </div>
-                    <button class="btn-primary" id="btnPagar" style="width: 100%; margin-top: 10px; height: 50px; font-weight: 900;">💰 REGISTRAR PAGO</button>
                 </div>
             `;
 
-            document.getElementById('btnTicket').onclick = () => printBill(id);
-            document.getElementById('btnCocina').onclick = () => printComanda();
-            document.getElementById('btnPagar').onclick = () => processPayment(id);
+            window.toggleSelection = (idx) => {
+                if (selectedItems.has(idx)) selectedItems.delete(idx);
+                else selectedItems.add(idx);
+                showMesaDetails(id);
+            };
+
+            const btnCocina = document.getElementById('btnCocina');
+            const btnPagar = document.getElementById('btnPagar');
+            const btnPagarParcial = document.getElementById('btnPagarParcial');
+
+            if (btnCocina) btnCocina.onclick = () => window.printComanda(id);
+            if (btnPagar) btnPagar.onclick = () => processPayment(id);
+            if (btnPagarParcial) btnPagarParcial.onclick = () => processPartialPayment(id);
         }
 
         async function processPayment(id) {
+            console.log("processPayment click for mesa", id);
             const mesaKey = `mesa_${id}`;
             const mesaDetail = allMesas[mesaKey];
-            if (!mesaDetail || mesaDetail.total === 0) return;
+            console.log("Mesa detail for payment:", mesaDetail);
 
-            if (!confirm(`¿Confirmar pago de S/ ${mesaDetail.total.toFixed(2)} para la Mesa ${id}?`)) return;
+            // Allow payment even if total is technically 0 if there are items, but let's calculate total just in case
+            const computedTotal = mesaDetail.items.reduce((sum, item) => sum + (item.price || 0), 0);
+
+            if (!mesaDetail || (mesaDetail.total === 0 && computedTotal === 0)) {
+                console.log("No items or total is 0");
+                return;
+            }
+
+            const totalToPay = mesaDetail.total > 0 ? mesaDetail.total : computedTotal;
+
+            if (!confirm(`¿Confirmar pago TOTAL de S/ ${totalToPay.toFixed(2)} para la Mesa ${id}?`)) return;
 
             try {
                 // Add to history
@@ -222,8 +484,14 @@
                     await window.saveDB(allMesas);
                 }
 
-                alert('Pago procesado correctamente');
+                // Print Full Ticket
+                if (typeof window.printBill === 'function') {
+                    window.printBill(id);
+                }
+
+                alert('Pago total procesado y ticket generado correctamente');
                 currentMesaId = null;
+                selectedItems.clear();
                 renderDashboard();
                 updateStats();
                 document.getElementById('actionPanel').innerHTML = `
@@ -238,8 +506,74 @@
             }
         }
 
+        async function processPartialPayment(id) {
+            const mesaKey = `mesa_${id}`;
+            const mesaDetail = allMesas[mesaKey];
+            if (!mesaDetail || selectedItems.size === 0) return;
+
+            // Extract selected items
+            const itemsToPay = [];
+            let partialTotal = 0;
+            const remainingItems = [];
+
+            mesaDetail.items.forEach((item, idx) => {
+                if (selectedItems.has(idx)) {
+                    itemsToPay.push(item);
+                    partialTotal += item.price;
+                } else {
+                    remainingItems.push(item);
+                }
+            });
+
+            if (!confirm(`¿Confirmar pago PARCIAL de S/ ${partialTotal.toFixed(2)} (${itemsToPay.length} platos) de la Mesa ${id}?`)) return;
+
+            try {
+                // Create a temporary object for history
+                const partialData = {
+                    id: id,
+                    items: itemsToPay,
+                    total: partialTotal
+                };
+
+                // Add partial to history
+                if (typeof window.addToHistory === 'function') {
+                    window.addToHistory(partialData);
+                }
+
+                // Update table with remaining items
+                mesaDetail.items = remainingItems;
+                mesaDetail.total = remainingItems.reduce((sum, item) => sum + item.price, 0);
+                mesaDetail.lastUpdate = new Date().toISOString();
+
+                // If no items left, free table
+                if (mesaDetail.items.length === 0) {
+                    mesaDetail.status = 'free';
+                }
+
+                // Save to Firestore
+                if (typeof window.saveDB === 'function') {
+                    await window.saveDB(allMesas);
+                }
+
+                // Print Partial Ticket
+                if (typeof window.printPartialBill === 'function') {
+                    window.printPartialBill(id, itemsToPay, partialTotal);
+                }
+
+                alert('Pago parcial procesado y ticket generado correctamente');
+                selectedItems.clear();
+                renderDashboard();
+                updateStats();
+                showMesaDetails(id);
+            } catch (error) {
+                console.error("Error al procesar pago parcial:", error);
+                alert('Error al procesar pago parcial');
+            }
+        }
+
         function printBill(id) {
-            const mesa = allMesas[id];
+            const mesaKey = `mesa_${id}`;
+            const mesa = allMesas[mesaKey];
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
@@ -250,20 +584,19 @@
                 <head>
                     <base href="${window.location.href}">
                     <style>
-                        body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; font-size: 12px; text-align: center; }
+                        body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; font-size: 12px; text-align: center; color: #000; }
                         .header { font-weight: bold; font-size: 1.4em; border-bottom: 2px dashed #000; margin-bottom: 10px; }
                         .item { display: flex; justify-content: space-between; margin: 3px 0; }
                         .total { font-weight: bold; font-size: 1.2em; border-top: 1px solid #000; padding: 5px 0; }
-                        .qr-container { margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
-                        .qr-img { width: 120px; height: 120px; margin-top: 5px; }
                         hr { border: 0; border-top: 1px dashed #000; }
+                        .qr-container { margin-top: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px; }
+                        .qr-img { width: 60mm; height: auto; display: block; margin: 0 auto; }
                     </style>
                 </head>
                 <body>
                     <div class="header">CEVICHERÍA 21</div>
-                    <div>Experiencia Premium</div>
                     <hr>
-                    <div style="font-weight: bold;">MESA: ${id}</div>
+                    <div style="font-weight: bold;">CUENTA MESA: ${id}</div>
                     <div>${new Date().toLocaleString()}</div>
                     <hr>
                     <div style="text-align: left; margin: 10px 0;">
@@ -272,18 +605,40 @@
                                 <span>${i.name}</span>
                                 <span>${i.price.toFixed(2)}</span>
                             </div>
-                            ${i.comment ? `<div style="font-size: 10px; color: #555;">- ${i.comment}</div>` : ''}
                         `).join('')}
                     </div>
                     <hr>
                     <div class="total">TOTAL: S/ ${mesa.total.toFixed(2)}</div>
-                    <script>
-                        window.onload = () => { window.print(); window.close(); };
-                    <\/script>
-</body>
+                    
+                    <div class="qr-container">
+                        <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px;">PAGA AQUÍ CON YAPE</div>
+                        <img src="yape_qr.png" class="qr-img" id="ticketQr">
+                        <div style="font-size: 9px; margin-top: 5px;">Dervis David Zevallos R.</div>
+                    </div>
 
-</html>
-`);
+                    <div style="margin-top: 15px; font-size: 10px;">¡Gracias por su preferencia!</div>
+
+                    <script>
+                        window.onload = () => {
+                            const img = document.getElementById('ticketQr');
+                            if (img.complete) {
+                                window.print();
+                                setTimeout(() => window.close(), 500);
+                            } else {
+                                img.onload = () => {
+                                    window.print();
+                                    setTimeout(() => window.close(), 500);
+                                };
+                                img.onerror = () => {
+                                    window.print();
+                                    setTimeout(() => window.close(), 500);
+                                };
+                            }
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
             doc.close();
         }
 

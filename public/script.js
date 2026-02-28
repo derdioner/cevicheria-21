@@ -330,10 +330,14 @@ function printContent(html) {
     }, 500);
 }
 
-function printComanda() {
-    if (!currentMesaId) return;
+function printComanda(passedId) {
+    const mesaId = passedId || (typeof window !== 'undefined' && window.currentMesaId) || (typeof currentMesaId !== 'undefined' ? currentMesaId : null);
+    if (!mesaId) {
+        console.error("No mesaId found for printComanda");
+        return;
+    }
     const db = getDB();
-    const mesa = db[`mesa_${currentMesaId}`];
+    const mesa = db[`mesa_${mesaId}`];
 
     if (!mesa.items || mesa.items.length === 0) {
         // Use non-blocking toast instead of alert if possible, or just return
@@ -348,7 +352,7 @@ function printComanda() {
         console.log("No new food items to print to kitchen.");
         mesa.items.forEach(item => item.printed = true);
         saveDB(db);
-        if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
+        if (typeof renderActionPanel === 'function') renderActionPanel(mesaId);
         return;
     }
 
@@ -357,7 +361,7 @@ function printComanda() {
     // Mark items as printed
     mesa.items.forEach(item => item.printed = true);
     saveDB(db);
-    if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
+    if (typeof renderActionPanel === 'function') renderActionPanel(mesaId);
 
     const itemsHtml = list.map(item => `
         <div style="margin-bottom:8px; font-family:monospace; border-bottom:1px dashed #ccc; padding-bottom:5px;">
@@ -381,7 +385,7 @@ function printComanda() {
         </head>
         <body>
             <h2>CEVICHERIA 21</h2>
-            <h3>MESA ${currentMesaId}</h3>
+            <h3>MESA ${mesaId}</h3>
             <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
             <div class="divider"></div>
             ${itemsHtml}
@@ -394,10 +398,14 @@ function printComanda() {
     printContent(ticketHtml);
 }
 
-function printBill() {
-    if (!currentMesaId) return;
+function printBill(passedId) {
+    const mesaId = passedId || (typeof window !== 'undefined' && window.currentMesaId) || (typeof currentMesaId !== 'undefined' ? currentMesaId : null);
+    if (!mesaId) {
+        console.error("No mesaId found for printBill");
+        return;
+    }
     const db = getDB();
-    const mesa = db[`mesa_${currentMesaId}`];
+    const mesa = db[`mesa_${mesaId}`];
 
     const itemsHtml = mesa.items.map(item => `
         <div style="margin-bottom:5px; font-family:monospace; font-size:13px; border-bottom:1px dashed #eee; padding-bottom:2px;">
@@ -422,12 +430,65 @@ function printBill() {
         </head>
         <body>
             <h2>CEVICHERIA 21</h2>
-            <h3>PRE-CUENTA MESA ${currentMesaId}</h3>
+            <h3>PRE-CUENTA MESA ${mesaId}</h3>
             <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
             <div class="divider"></div>
             ${itemsHtml}
             <div class="divider"></div>
             <div class="total">TOTAL: ${formatMoney(mesa.total)}</div>
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
+                <img src="yape_qr_v2.png" style="width: 200px; height: 200px; margin: 0 auto; display: block;">
+                <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
+            </div>
+            <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
+        </body>
+        </html>
+    `;
+
+    printContent(billHtml);
+}
+
+function printPartialBill(mesaId, partialItems, partialTotal) {
+    if (!mesaId || !partialItems || partialItems.length === 0) {
+        console.error("Missing data for printPartialBill", mesaId, partialItems);
+        return;
+    }
+
+    const itemsHtml = partialItems.map(item => `
+        <div style="margin-bottom:5px; font-family:monospace; font-size:13px; border-bottom:1px dashed #eee; padding-bottom:2px;">
+            <div style="display:flex; justify-content:space-between;">
+                <span>${item.name}</span>
+                <span>${formatMoney(item.price)}</span>
+            </div>
+            ${item.options ? `<div style="font-size:11px; color:#666; font-style:italic;">(${item.options.join(' + ')})</div>` : ''}
+            ${item.note ? `<div style="font-size:11px; color:#333;">Nota: ${item.note}</div>` : ''}
+        </div>
+    `).join('');
+
+    const billHtml = `
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
+                h2, h3 { text-align: center; margin: 5px 0; }
+                .divider { border-top: 1px dashed #000; margin: 10px 0; }
+                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <h2>CEVICHERIA 21</h2>
+            <h3>PAGO PARCIAL MESA ${mesaId}</h3>
+            <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
+            <div class="divider"></div>
+            ${itemsHtml}
+            <div class="divider"></div>
+            <div class="total">TOTAL PARCIAL: ${formatMoney(partialTotal)}</div>
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
+                <img src="yape_qr_v2.png" style="width: 200px; height: 200px; margin: 0 auto; display: block;">
+                <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
+            </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
         </body>
         </html>
@@ -509,6 +570,7 @@ window.getHistory = getHistory;
 window.addToHistory = addToHistory;
 window.printComanda = printComanda;
 window.printBill = printBill;
+window.printPartialBill = printPartialBill;
 window.closeTable = closeTable;
 window.MENU = MENU;
 window.initDB = initDB;
