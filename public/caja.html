@@ -577,6 +577,18 @@
         function printBill(id, ticketData = null) {
             const mesaKey = `mesa_${id}`;
             const mesa = ticketData || allMesas[mesaKey];
+
+            // Explicitly map items BEFORE entering the doc.write context
+            // to prevent losing reference if the original array is wiped in memory.
+            const itemsHtmlRaw = (mesa && mesa.items ? mesa.items : []).map(i => `
+                <div class="item">
+                    <span>${i.name}</span>
+                    <span>${i.price.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            const mesaTotalRaw = (mesa && mesa.total !== undefined) ? mesa.total : 0;
+
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
@@ -603,15 +615,10 @@
                     <div>${new Date().toLocaleString()}</div>
                     <hr>
                     <div style="text-align: left; margin: 10px 0;">
-                        ${mesa.items.map(i => `
-                            <div class="item">
-                                <span>${i.name}</span>
-                                <span>${i.price.toFixed(2)}</span>
-                            </div>
-                        `).join('')}
+                        ${itemsHtmlRaw}
                     </div>
                     <hr>
-                    <div class="total">TOTAL: S/ ${mesa.total.toFixed(2)}</div>
+                    <div class="total">TOTAL: S/ ${mesaTotalRaw.toFixed(2)}</div>
                     
                     <div class="qr-container">
                         <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px;">PAGA AQUÍ CON YAPE</div>
