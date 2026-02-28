@@ -202,10 +202,22 @@ const MENU = [
     { id: 404, name: 'Aeropuerto de Marisco', price: 30.00, category: 'CHAUFAS' },
 
     // DUOS MARINOS
-    { id: 501, name: 'Ceviche Simple + Arroz con Mariscos o Chaufa de Mariscos', price: 35.00, category: 'DUOS MARINOS' },
-    { id: 502, name: 'Ceviche Mixto + Arroz con Mariscos o Chaufa de Mariscos', price: 38.00, category: 'DUOS MARINOS' },
-    { id: 503, name: 'Arroz con Mariscos o Chaufa de Mariscos + Chicharrón de Pescado o Pollo', price: 35.00, category: 'DUOS MARINOS' },
-    { id: 504, name: 'Arroz con Mariscos o Chaufa de Mariscos + Chicharrón de Calamar', price: 40.00, category: 'DUOS MARINOS' },
+    {
+        id: 501, name: 'Dúo: Ceviche Simple', price: 35.00, category: 'DUOS MARINOS',
+        hasOptions: true, choices: ['Arroz con Mariscos', 'Chaufa de Mariscos'], maxChoices: 1
+    },
+    {
+        id: 502, name: 'Dúo: Ceviche Mixto', price: 38.00, category: 'DUOS MARINOS',
+        hasOptions: true, choices: ['Arroz con Mariscos', 'Chaufa de Mariscos'], maxChoices: 1
+    },
+    {
+        id: 503, name: 'Dúo: Arroz/Chaufa de Mariscos (1)', price: 35.00, category: 'DUOS MARINOS',
+        hasOptions: true, choices: ['Arroz con Mariscos + Chicharrón de Pescado', 'Arroz con Mariscos + Chicharrón de Pollo', 'Chaufa de Mariscos + Chicharrón de Pescado', 'Chaufa de Mariscos + Chicharrón de Pollo'], maxChoices: 1
+    },
+    {
+        id: 504, name: 'Dúo: Arroz/Chaufa de Mariscos (2)', price: 40.00, category: 'DUOS MARINOS',
+        hasOptions: true, choices: ['Arroz con Mariscos + Chicharrón de Calamar', 'Chaufa de Mariscos + Chicharrón de Calamar'], maxChoices: 1
+    },
 
     // TRIOS MARINOS
     { id: 601, name: 'TRIO 1: Ceviche Simple + Chicharrón de Pescado + Arroz con Mariscos', price: 40.00, category: 'TRIOS MARINOS' },
