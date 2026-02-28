@@ -407,7 +407,8 @@ function printBill(passedId, explicitMesaInfo = null) {
     const db = getDB();
     const mesa = explicitMesaInfo || db[`mesa_${mesaId}`];
 
-    const itemsHtml = mesa.items.map(item => `
+    // Explicitly bind variables to avoid closure issues during doc.write async loads
+    const itemsHtmlRaw = (mesa && mesa.items ? mesa.items : []).map(item => `
         <div style="margin-bottom:5px; font-family:monospace; font-size:13px; border-bottom:1px dashed #eee; padding-bottom:2px;">
             <div style="display:flex; justify-content:space-between;">
                 <span>${item.name}</span>
@@ -417,6 +418,8 @@ function printBill(passedId, explicitMesaInfo = null) {
             ${item.note ? `<div style="font-size:11px; color:#333;">Nota: ${item.note}</div>` : ''}
         </div>
     `).join('');
+
+    const mesaTotalRaw = (mesa && mesa.total !== undefined) ? mesa.total : 0;
 
     const billHtml = `
         <html>
@@ -433,13 +436,11 @@ function printBill(passedId, explicitMesaInfo = null) {
             <h3>PRE-CUENTA MESA ${mesaId}</h3>
             <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
             <div class="divider"></div>
-            ${itemsHtml}
+            ${itemsHtmlRaw}
             <div class="divider"></div>
-            <div class="total">TOTAL: ${formatMoney(mesa.total)}</div>
+            <div class="total">TOTAL: ${formatMoney(mesaTotalRaw)}</div>
             <div style="text-align: center; margin-top: 20px;">
-                <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
-                <img src="yape_qr_v2.png" style="width: 250px; height: 250px; margin: 0 auto; display: block;">
-                <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
+                <img src="yape_qr_v2.png" style="width: 300px; height: 300px; margin: 0 auto; display: block;">
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
         </body>
@@ -485,9 +486,7 @@ function printPartialBill(mesaId, partialItems, partialTotal) {
             <div class="divider"></div>
             <div class="total">TOTAL PARCIAL: ${formatMoney(partialTotal)}</div>
             <div style="text-align: center; margin-top: 20px;">
-                <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
-                <img src="yape_qr_v2.png" style="width: 250px; height: 250px; margin: 0 auto; display: block;">
-                <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
+                <img src="yape_qr_v2.png" style="width: 300px; height: 300px; margin: 0 auto; display: block;">
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
         </body>
