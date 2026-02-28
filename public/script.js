@@ -439,8 +439,8 @@ function printBill(passedId, explicitMesaInfo = null) {
             ${itemsHtmlRaw}
             <div class="divider"></div>
             <div class="total">TOTAL: ${formatMoney(mesaTotalRaw)}</div>
-            <div style="text-align: center; margin-top: 20px;">
-                <img src="yape_qr_v2.png" style="width: 300px; height: 300px; margin: 0 auto; display: block;">
+            <div style="text-align: center; margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <img src="yape_qr_v2.png" style="width: 240px; height: 240px; margin: 10px auto; display: block; max-width: 100%;">
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
         </body>
@@ -485,8 +485,8 @@ function printPartialBill(mesaId, partialItems, partialTotal) {
             ${itemsHtml}
             <div class="divider"></div>
             <div class="total">TOTAL PARCIAL: ${formatMoney(partialTotal)}</div>
-            <div style="text-align: center; margin-top: 20px;">
-                <img src="yape_qr_v2.png" style="width: 300px; height: 300px; margin: 0 auto; display: block;">
+            <div style="text-align: center; margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <img src="yape_qr_v2.png" style="width: 240px; height: 240px; margin: 10px auto; display: block; max-width: 100%;">
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
         </body>
