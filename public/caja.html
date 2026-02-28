@@ -574,9 +574,9 @@
             }
         }
 
-        function printBill(id) {
+        function printBill(id, ticketData = null) {
             const mesaKey = `mesa_${id}`;
-            const mesa = allMesas[mesaKey];
+            const mesa = ticketData || allMesas[mesaKey];
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
@@ -593,7 +593,7 @@
                         .total { font-weight: bold; font-size: 1.2em; border-top: 1px solid #000; padding: 5px 0; }
                         hr { border: 0; border-top: 1px dashed #000; }
                         .qr-container { margin-top: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px; }
-                        .qr-img { width: 60mm; height: auto; display: block; margin: 0 auto; }
+                        .qr-img { width: 68mm; height: auto; display: block; margin: 0 auto; }
                     </style>
                 </head>
                 <body>
