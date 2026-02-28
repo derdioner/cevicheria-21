@@ -345,7 +345,7 @@ function printComanda(passedId) {
         return;
     }
 
-    const itemsToPrint = mesa.items.filter(i => !i.printed && i.category !== 'BEBIDAS');
+    const itemsToPrint = mesa.items.filter(i => !i.printed);
 
     // If no new food items, just mark everything as printed to clear UI badges
     if (itemsToPrint.length === 0) {
@@ -398,14 +398,14 @@ function printComanda(passedId) {
     printContent(ticketHtml);
 }
 
-function printBill(passedId) {
+function printBill(passedId, explicitMesaInfo = null) {
     const mesaId = passedId || (typeof window !== 'undefined' && window.currentMesaId) || (typeof currentMesaId !== 'undefined' ? currentMesaId : null);
     if (!mesaId) {
         console.error("No mesaId found for printBill");
         return;
     }
     const db = getDB();
-    const mesa = db[`mesa_${mesaId}`];
+    const mesa = explicitMesaInfo || db[`mesa_${mesaId}`];
 
     const itemsHtml = mesa.items.map(item => `
         <div style="margin-bottom:5px; font-family:monospace; font-size:13px; border-bottom:1px dashed #eee; padding-bottom:2px;">
@@ -438,7 +438,7 @@ function printBill(passedId) {
             <div class="total">TOTAL: ${formatMoney(mesa.total)}</div>
             <div style="text-align: center; margin-top: 20px;">
                 <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
-                <img src="yape_qr_v2.png" style="width: 200px; height: 200px; margin: 0 auto; display: block;">
+                <img src="yape_qr_v2.png" style="width: 250px; height: 250px; margin: 0 auto; display: block;">
                 <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
@@ -486,7 +486,7 @@ function printPartialBill(mesaId, partialItems, partialTotal) {
             <div class="total">TOTAL PARCIAL: ${formatMoney(partialTotal)}</div>
             <div style="text-align: center; margin-top: 20px;">
                 <p style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">PAGA CON YAPE</p>
-                <img src="yape_qr_v2.png" style="width: 200px; height: 200px; margin: 0 auto; display: block;">
+                <img src="yape_qr_v2.png" style="width: 250px; height: 250px; margin: 0 auto; display: block;">
                 <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">GRECIA PRADA</p>
             </div>
             <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>

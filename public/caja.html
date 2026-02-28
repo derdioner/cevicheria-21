@@ -473,6 +473,9 @@
                     window.addToHistory(mesaDetail);
                 }
 
+                // Capture data before clearing
+                const ticketData = JSON.parse(JSON.stringify(mesaDetail));
+
                 // Reset table
                 mesaDetail.status = 'free';
                 mesaDetail.items = [];
@@ -486,7 +489,7 @@
 
                 // Print Full Ticket
                 if (typeof window.printBill === 'function') {
-                    window.printBill(id);
+                    window.printBill(id, ticketData);
                 }
 
                 alert('Pago total procesado y ticket generado correctamente');
