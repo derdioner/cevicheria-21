@@ -309,7 +309,8 @@ const MENU = [
     { id: 1512, name: 'Cuzqueña Negra', price: 6.00, category: 'BEBIDAS' },
     { id: 1513, name: 'Pilsen en Lata 355ml', price: 6.00, category: 'BEBIDAS' },
     { id: 1514, name: 'Pilsen Fresh en Lata 355ml', price: 6.00, category: 'BEBIDAS' },
-    { id: 1515, name: 'Pilsen Botella Personal', price: 7.00, category: 'BEBIDAS' }
+    { id: 1515, name: 'Pilsen Botella Personal', price: 7.00, category: 'BEBIDAS' },
+    { id: 1516, name: 'Trigo en lata de 473 ml', price: 7.00, category: 'BEBIDAS' }
 ];
 
 // EXPOSE MENU IMMEDIATELY
