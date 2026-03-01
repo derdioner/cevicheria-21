@@ -183,13 +183,13 @@ function getDailyReport() {
 const MENU = [
     // CEVICHES
     { id: 101, name: 'Ceviche Simple', price: 25.00, category: 'CEVICHES' },
-    { id: 102, name: 'Ceviche Mixto', price: 33.00, category: 'CEVICHES' },
+    { id: 102, name: 'Ceviche Mixto', price: 38.00, category: 'CEVICHES' },
     { id: 103, name: 'Ceviche de Conchas Negras', price: 45.00, category: 'CEVICHES' },
 
     // CHICHARRONES
     { id: 201, name: 'Chicharrón de Pescado', price: 25.00, category: 'CHICHARRONES' },
     { id: 202, name: 'Chicharrón de Calamar', price: 30.00, category: 'CHICHARRONES' },
-    { id: 203, name: 'Chicharrón de Pollo', price: 35.00, category: 'CHICHARRONES' },
+    { id: 203, name: 'Chicharrón de Pollo', price: 25.00, category: 'CHICHARRONES' },
 
     // JALEAS
     { id: 301, name: 'Jalea Simple', price: 35.00, category: 'JALEAS' },
@@ -244,6 +244,7 @@ const MENU = [
     { id: 906, name: 'Chicharrón de Pollo (Porción)', price: 10.00, category: 'PORCIONES' },
     { id: 907, name: 'Yuca Frita', price: 5.00, category: 'PORCIONES' },
     { id: 908, name: 'Yuca Sancochada', price: 5.00, category: 'PORCIONES' },
+    { id: 909, name: 'Taper / Envase', price: 1.00, category: 'PORCIONES' },
 
     // A LA PARRILLA
     { id: 1001, name: 'Anticucho', price: 20.00, category: 'A LA PARRILLA' },
@@ -253,14 +254,14 @@ const MENU = [
     { id: 1005, name: 'Chuleta', price: 28.00, category: 'A LA PARRILLA' },
     { id: 1006, name: 'Picana Brasileira', price: 70.00, category: 'A LA PARRILLA' },
     { id: 1007, name: 'Pechuga o Pierna a la Parrilla', price: 25.00, category: 'A LA PARRILLA' },
-    { id: 1008, name: 'Bife Angosto', price: 30.00, category: 'A LA PARRILLA' },
+    { id: 1008, name: 'Bife Angosto', price: 45.00, category: 'A LA PARRILLA' },
     { id: 1009, name: 'Lomo Fino', price: 40.00, category: 'A LA PARRILLA' },
     { id: 1010, name: 'Costilla Ahumada', price: 30.00, category: 'A LA PARRILLA' },
     { id: 1011, name: 'Cecina con Patacones', price: 28.00, category: 'A LA PARRILLA' },
-    { id: 1012, name: 'Chorizo con Patacones', price: 25.00, category: 'A LA PARRILLA' },
+    { id: 1012, name: 'Chorizo con Patacones', price: 28.00, category: 'A LA PARRILLA' },
     { id: 1013, name: 'Chaufa de Res', price: 28.00, category: 'A LA PARRILLA' },
-    { id: 1014, name: 'Chaufa Amazónico', price: 30.00, category: 'A LA PARRILLA' },
-    { id: 1015, name: 'Chaufa 21', price: 28.00, category: 'A LA PARRILLA' },
+    { id: 1014, name: 'Chaufa Amazónico', price: 28.00, category: 'A LA PARRILLA' },
+    { id: 1015, name: 'Chaufa 21', price: 30.00, category: 'A LA PARRILLA' },
     { id: 1016, name: 'Fetuccini a lo Alfredo', price: 22.00, category: 'A LA PARRILLA' },
     { id: 1017, name: 'Fetuccini a lo Alfredo con Pechuga', price: 28.00, category: 'A LA PARRILLA' },
     { id: 1018, name: 'Alitas BBQ', price: 15.00, category: 'A LA PARRILLA' },
@@ -357,11 +358,11 @@ function printComanda(passedId) {
         return;
     }
 
-    const itemsToPrint = mesa.items.filter(i => !i.printed);
+    const itemsToPrint = mesa.items.filter(i => !i.printed && i.category !== 'BEBIDAS');
 
     // If no new food items, just mark everything as printed to clear UI badges
     if (itemsToPrint.length === 0) {
-        console.log("No new food items to print to kitchen.");
+        console.log("No new food items to print to kitchen. Marking all as processed.");
         mesa.items.forEach(item => item.printed = true);
         saveDB(db);
         if (typeof renderActionPanel === 'function') renderActionPanel(mesaId);

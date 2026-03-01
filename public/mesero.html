@@ -71,6 +71,13 @@
                     <span style="color: var(--text-muted); font-size: 14px;">Total Estimado</span>
                     <span id="orderTotal" style="font-size: 24px; font-weight: 800; color: var(--gold);">S/ 0.00</span>
                 </div>
+
+                <!-- Quick Actions -->
+                <button class="btn-secondary" onclick="addToBasket('Taper / Envase', 1.00, null, 'PORCIONES')"
+                    style="width:100%; height: 45px; margin-bottom: 10px; border-color: var(--gold); color: var(--gold); font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(212, 175, 55, 0.05);">
+                    🥡 AGREGAR TAPER (S/ 1.00)
+                </button>
+
                 <button class="btn-primary" id="btnSendOrder" onclick="sendOrder()" disabled
                     style="width:100%; height: 50px;">
                     🚀 ENVIAR A COCINA
