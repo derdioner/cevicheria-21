@@ -305,9 +305,10 @@ const MENU = [
     { id: 1508, name: 'Jarra de Refresco 1Lt', price: 12.00, category: 'BEBIDAS' },
     { id: 1509, name: 'Refresco Personal', price: 6.00, category: 'BEBIDAS' },
     { id: 1510, name: 'San Juan', price: 7.00, category: 'BEBIDAS' },
-    { id: 1511, name: 'Cuzqueña Trigo', price: 8.00, category: 'BEBIDAS' },
-    { id: 1512, name: 'Mikes', price: 6.00, category: 'BEBIDAS' },
-    { id: 1513, name: 'Pilsen Personal', price: 7.00, category: 'BEBIDAS' }
+    { id: 1511, name: 'Trigo en Lata 473ml', price: 7.00, category: 'BEBIDAS' },
+    { id: 1512, name: 'Cuzqueña Negra', price: 6.00, category: 'BEBIDAS' },
+    { id: 1513, name: 'Pilsen en Lata', price: 7.00, category: 'BEBIDAS' },
+    { id: 1514, name: 'Pilsen Fresh', price: 7.00, category: 'BEBIDAS' }
 ];
 
 // EXPOSE MENU IMMEDIATELY
