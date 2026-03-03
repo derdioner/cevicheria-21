@@ -183,7 +183,8 @@ function getDailyReport() {
 const MENU = [
     // CEVICHES
     { id: 101, name: 'Ceviche Simple', price: 25.00, category: 'CEVICHES' },
-    { id: 102, name: 'Ceviche Mixto', price: 38.00, category: 'CEVICHES' },
+    { id: 102, name: 'Ceviche Mixto', price: 33.00, category: 'CEVICHES' },
+    { id: 104, name: 'Ceviche Mixto', price: 38.00, category: 'CEVICHES' },
     { id: 103, name: 'Ceviche de Conchas Negras', price: 45.00, category: 'CEVICHES' },
 
     // CHICHARRONES
@@ -393,6 +394,7 @@ function printComanda(passedId) {
     const ticketHtml = `
         <html>
         <head>
+            <base href="${window.location.href}">
             <style>
                 body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
                 h2, h3 { text-align: center; margin: 5px 0; }
@@ -440,6 +442,7 @@ function printBill(passedId, explicitMesaInfo = null) {
     const billHtml = `
         <html>
         <head>
+            <base href="${window.location.href}">
             <style>
                 body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
                 h2, h3 { text-align: center; margin: 5px 0; }
@@ -486,6 +489,7 @@ function printPartialBill(mesaId, partialItems, partialTotal) {
     const billHtml = `
         <html>
         <head>
+            <base href="${window.location.href}">
             <style>
                 body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
                 h2, h3 { text-align: center; margin: 5px 0; }
@@ -642,6 +646,7 @@ function printReport(dateString, stats) {
     const reportHtml = `
         <html>
         <head>
+            <base href="${window.location.href}">
             <style>
                 body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
                 h2, h3 { text-align: center; margin: 5px 0; }
